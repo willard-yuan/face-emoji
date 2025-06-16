@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+  <!-- Background -->
+  <rect width="300" height="300" fill="#f5f5f5"/>
+  
+  <!-- Person silhouette -->
+  <circle cx="150" cy="100" r="60" fill="#ddd"/>
+  <path d="M150 170 Q 100 250 100 300 L 200 300 Q 200 250 150 170" fill="#ddd"/>
+  
+  <!-- Face features placeholder -->
+  <circle cx="130" cy="90" r="5" fill="#555"/>
+  <circle cx="170" cy="90" r="5" fill="#555"/>
+  <path d="M130 120 Q 150 140 170 120" fill="none" stroke="#555" stroke-width="3"/>
+</svg>
