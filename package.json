@@ -6,7 +6,8 @@
   "scripts": {
     "start": "python3 -m http.server 8000",
     "dev": "python3 -m http.server 8000",
-    "build": "echo 'No build process needed for static site'"
+    "build": "echo 'Static site ready for deployment'",
+    "vercel-build": "echo 'Vercel build completed'"
   },
   "keywords": [
     "emoji",
@@ -19,7 +20,9 @@
   "license": "MIT",
   "dependencies": {
     "face-api.js": "^0.22.2",
-    "@remix-run/dev": "^2.0.0"
+    "@remix-run/dev": "^2.0.0",
+    "@remix-run/node": "^2.0.0",
+    "@vercel/static-build": "^1.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
