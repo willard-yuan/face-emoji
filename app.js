@@ -25,8 +25,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadModels() {
     try {
         console.log('Loading face-api.js models...');
-        
-        await faceapi.nets.tinyFaceDetector.loadFromUri('./public/models');
+
+        await faceapi.nets.ssdMobilenetv1.loadFromUri('./public/models');
+        // await faceapi.nets.tinyFaceDetector.loadFromUri('./public/models');
+        // await faceapi.nets.mtcnn.loadFromUri('./public/models');
         await faceapi.nets.faceExpressionNet.loadFromUri('./public/models');
         
         console.log('Models loaded successfully');
@@ -144,8 +146,29 @@ function createImageFromFile(file) {
 // 检测人脸和表情
 async function detectFacesAndExpressions(img) {
     const detections = await faceapi
-        .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions())
+        .detectAllFaces(img, new faceapi.SsdMobilenetv1Options({
+            minConfidence: 0.3,  // 提高置信度阈值，减少误检
+            maxResults: 10       // 限制最多返回10个人脸
+        }))
         .withFaceExpressions();
+
+
+        // .detectAllFaces(img, new faceapi.MtcnnOptions({
+        //     minFaceSize: 20,
+        //     scaleFactor: 0.709
+        // }))
+
+        // .detectAllFaces(img, new faceapi.SsdMobilenetv1Options({
+        //     minConfidence: 0.3,  // 提高置信度阈值，减少误检
+        //     maxResults: 10       // 限制最多返回10个人脸
+        // }))
+
+        // this.options = new faceapi.MtcnnOptions({
+        //     minFaceSize: 20, // 1 - 50
+        //     scaleFactor: 0.709, // 0.1 ~ 0.9
+        //   });
+    
+    // .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions())
     
     return detections;
 }
