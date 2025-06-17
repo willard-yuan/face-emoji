@@ -18,7 +18,8 @@
   "author": "EmojiMyFace",
   "license": "MIT",
   "dependencies": {
-    "face-api.js": "^0.22.2"
+    "face-api.js": "^0.22.2",
+    "@remix-run/dev": "^2.0.0"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
