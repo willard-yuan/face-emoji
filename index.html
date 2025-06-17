@@ -3,387 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EmojiMyFace | Turn Photos into Emoji Art</title>
+    <title>EmojiMyFace | Turn Photos into Emoji Art | AI Face</title>
+    <link rel="icon" href="public/favicon.ico">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <header>
-        <div class="container">
+    <header class="header">
+        <div class="container header-container">
             <div class="logo">
                 <h1>EmojiMyFace</h1>
             </div>
-            <nav>
-                <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#how-it-works">How It Works</a></li>
-                    <li><a href="#faq">FAQ</a></li>
-                </ul>
+            <nav class="nav-links">
+                <a href="#">Features</a>
+                <a href="#how-it-works">How It Works</a>
+                <a href="#faq">FAQ</a>
             </nav>
+            <button class="cta-button">Get Started</button>
         </div>
     </header>
+    
+    <main>
+        <section class="hero">
+            <div class="container hero-container">
+                <div class="hero-content">
+                    <h1>Turn Your <span>Photos into Emoji</span> Art <span>with AI</span></h1>
+                    <p>Upload your selfies and portraits for our AI-powered facial recognition to convert them into expressive emoji masterpieces. Fast, fun, secure and 100% free - no sign-up required!</p>
+                    <div class="hero-buttons">
+                        <div class="feature-badges">
+                            <span class="badge">Face to Emoji Converter</span>
+                            <span class="badge">AI-Powered Recognition</span>
+                            <span class="badge">100% Free Service</span>
+                            <span class="badge">Privacy Protected</span>
+                            <span class="badge">Instant Transformation</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-    <section class="hero">
-        <div class="container">
-            <div class="hero-content">
-                <h1>Turn Photos into Emoji Art</h1>
-                <p>Upload your selfies and portraits for our AI-powered facial recognition to convert them into expressive emoji masterpieces. Fast, fun, secure and 100% free - no sign-up required!</p>
-                <div class="feature-badges">
-                    <span class="badge">Face to Emoji Converter</span>
-                    <span class="badge">AI-Powered Recognition</span>
-                    <span class="badge">100% Free Service</span>
-                    <span class="badge">Privacy Protected</span>
-                    <span class="badge">Instant Transformation</span>
+        <section class="upload-section">
+            <div class="container">
+                <div class="upload-container">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 5.5l-8 8h5v4h6v-4h5l-8-8z"/></svg>
+                        </div>
+                        <div class="upload-text">Drag and drop your photo here</div>
+                        <div class="upload-subtext">or click to select a file</div>
+                    </div>
+                    <input type="file" id="fileInput" accept="image/*">
+                    <button class="btn try-now-btn" onclick="document.getElementById('fileInput').click()">Select Photo</button>
                 </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Processing your photo with AI...</p>
+                </div>
+                
+                <div class="canvas-container">
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <button class="btn" id="downloadBtn" style="display: none;" onclick="downloadImage()">Download Emoji Photo</button>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section class="upload-section">
-        <div class="container">
-            <div class="upload-container" id="upload-area">
-                <div class="upload-icon">
-                    <i class="fas fa-cloud-upload-alt"></i>
+            <section class="transformations">
+                <div class="container">
+                    <h2>Amazing <span class="highlight">Transformations</span></h2>
+                    <p>See how our AI transforms ordinary photos into lively and fun emoji art</p>
+                
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="original">Original Photo</button>
+                    <button class="tab-btn" data-tab="emoji">Emoji Version</button>
                 </div>
-                <h3>Drag and drop your photo here</h3>
-                <p>or click to select a file</p>
-                <input type="file" id="file-input" accept="image/*" hidden>
-                <button class="select-btn" id="select-btn">Select Photo</button>
-            </div>
-            <div class="result-container" id="result-container" style="display: none;">
-                <div class="result-images">
-                    <div class="original-image">
-                        <h4>Original</h4>
-                        <img id="original-img" src="" alt="Original Image">
+                
+                <div class="examples">
+                    <div class="example">
+                        <img src="./public/images/demo1.webp" alt="Gatsby to Emoji">
+                        <div class="example-caption">
+                            <h3>Selfie to Emoji</h3>
+                            <p>Convert faces in selfies to perfectly matching emoji expressions</p>
+                        </div>
                     </div>
-                    <div class="arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                    <div class="emoji-image">
-                        <h4>Emojified</h4>
-                        <img id="emoji-img" src="" alt="Emoji Image">
+                    
+                    <div class="example">
+                        <img src="./public/images/demo2.webp" alt="Party Couple Emojified">
+                        <div class="example-caption">
+                            <h3>Portrait to Emoji</h3>
+                            <p>Transform any portrait photo into a fun emoji version</p>
+                        </div>
                     </div>
                 </div>
-                <div class="result-actions">
-                    <button class="download-btn" id="download-btn">Download</button>
-                    <button class="try-again-btn" id="try-again-btn">Try Another Photo</button>
+                
+                <button class="btn create-btn">Create Your Own Emoji <span class="arrow">→</span></button>
                 </div>
-            </div>
-        </div>
-    </section>
+            </section>
 
-    <section class="transformations" id="transformations">
-        <div class="container">
-            <h2>Amazing Transformations</h2>
-            <p>See how our AI transforms ordinary photos into lively and fun emoji art</p>
-            <div class="examples">
-                <div class="example">
-                    <div class="example-before">
-                        <img src="images/example1-before.svg" alt="Example 1 Before">
-                    </div>
-                    <div class="example-after">
-                        <img src="images/example1-after.svg" alt="Example 1 After">
+            <section class="why-choose" id="features">
+                <div class="container">
+                    <h2>Why Choose <span class="highlight">EmojiMyFace</span>?</h2>
+                    <p>The most advanced emoji face transformation tool available today, trusted by thousands of users worldwide for creating perfect emoji portraits.</p>
+                    
+                    <div class="features">
+                        <div class="feature">
+                            <div class="feature-icon">⚙️</div>
+                            <h3>AI-Powered Emoji Magic</h3>
+                            <p>Our cutting-edge AI technology intelligently analyzes facial features, expressions, and emotions to pick the perfect emoji match for each face in your photos.</p>
+                        </div>
+                        
+                        <div class="feature">
+                            <div class="feature-icon">🔒</div>
+                            <h3>Privacy Guaranteed</h3>
+                            <p>Your photos are processed locally and never stored on our servers. Your privacy is our top priority with end-to-end processing security.</p>
+                        </div>
+                        
+                        <div class="feature">
+                            <div class="feature-icon">⚡</div>
+                            <h3>Lightning Fast Conversions</h3>
+                            <p>Get your emojified photos in seconds with our optimized processing engine, powered by Google's Gemini AI technology.</p>
+                        </div>
                     </div>
                 </div>
-                <div class="example">
-                    <div class="example-before">
-                        <img src="images/example2-before.svg" alt="Example 2 Before">
-                    </div>
-                    <div class="example-after">
-                        <img src="images/example2-after.svg" alt="Example 2 After">
-                    </div>
-                </div>
-            </div>
-            <button class="cta-btn">Create Your Own Emoji</button>
-        </div>
-    </section>
+            </section>
 
-    <section class="features" id="features">
-        <div class="container">
-            <h2>Why Choose EmojiMyFace?</h2>
-            <p>The most advanced emoji face transformation tool available today, trusted by thousands of users worldwide for creating perfect emoji portraits.</p>
+            <section class="perfect-emoji" id="perfect-emoji">
+                <div class="container">
+                    <h2>Everything You Need for Perfect Emoji Transformations</h2>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon-circle">
+                                <i class="feature-icon">⚙️</i>
+                            </div>
+                            <h3>Precise Emoji Matching</h3>
+                            <p>Our AI precisely matches facial expressions with the perfect emoji, capturing the exact mood and emotion of each person.</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon-circle">
+                                <i class="feature-icon">🖼️</i>
+                            </div>
+                            <h3>Background Preservation</h3>
+                            <p>Only faces are transformed while preserving the original background and composition of your photos.</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon-circle">
+                                <i class="feature-icon">✨</i>
+                            </div>
+                            <h3>High-Quality Results</h3>
+                            <p>Create professional-looking emoji transformations suitable for social media, marketing, or personal use.</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon-circle">
+                                <i class="feature-icon">👥</i>
+                            </div>
+                            <h3>Multiple Face Detection</h3>
+                            <p>EmojiMyFace can detect and transform multiple faces in a single photo - perfect for group pictures!</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon-circle">
+                                <i class="feature-icon">📱</i>
+                            </div>
+                            <h3>Works with Any Photo</h3>
+                            <p>Upload photos from your phone, computer, or social media - our tool works with images from any source.</p>
+                        </div>
+                        
+                        <div class="feature-card">
+                            <div class="feature-icon-circle">
+                                <i class="feature-icon">🔐</i>
+                            </div>
+                            <h3>Secure Processing</h3>
+                            <p>All image processing happens through secure connections with enterprise-grade encryption standards.</p>
+                        </div>
+                    </div>
+                    
+                    <p class="join-text">Join over 100,000 users who trust EmojiMyFace for their emoji transformation needs</p>
+                    
+                    <a href="#upload" class="btn try-now-btn">Try EmojiMyFace Now</a>
+                </div>
+            </section>
             
-            <div class="feature-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-robot"></i>
+            <section class="how-it-works" id="how-it-works">
+                <div class="container">
+                    <h2>How <span class="highlight">EmojiMyFace</span> Works</h2>
+                    <p>Transform your photos into emoji art in just three simple steps with our AI-powered emoji conversion technology</p>
+                    
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM11 12V16H13V12H16L12 8L8 12H11Z"/></svg>
+                            </div>
+                            <h3>Upload Your Photo</h3>
+                            <p>Drag and drop or select any photo containing faces from your device</p>
+                            <p class="step-details">EmojiMyFace accepts JPEG, PNG, and WebP files up to 10MB in size. You can upload personal photos, group pictures, or any image with faces.</p>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM12 17.5C14.33 17.5 16.31 16.04 17.11 14H6.89C7.69 16.04 9.67 17.5 12 17.5ZM8.5 8C7.67 8 7 8.67 7 9.5C7 10.33 7.67 11 8.5 11C9.33 11 10 10.33 10 9.5C10 8.67 9.33 8 8.5 8ZM15.5 8C14.67 8 14 8.67 14 9.5C14 10.33 14.67 11 15.5 11C16.33 11 17 10.33 17 9.5C17 8.67 16.33 8 15.5 8Z"/></svg>
+                            </div>
+                            <h3>AI Emoji Transformation</h3>
+                            <p>Our advanced AI analyzes expressions and matches perfect emojis to each face</p>
+                            <p class="step-details">Using Google's Gemini AI technology, EmojiMyFace detects facial features, age, emotions, and expressions to select the ideal emoji match for each person.</p>
+                        </div>
+                        
+                        <div class="step">
+                            <div class="step-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM13 12V8H11V12H8L12 16L16 12H13Z"/></svg>
+                            </div>
+                            <h3>Download & Share</h3>
+                            <p>Get your emojified photo instantly and share on social media</p>
+                            <p class="step-details">Your transformed image is ready in seconds. Download in high resolution and share directly to Instagram, Facebook, Twitter, or save to your device.</p>
+                        </div>
                     </div>
-                    <h3>AI-Powered Emoji Magic</h3>
-                    <p>Our cutting-edge AI technology intelligently analyzes facial features, expressions, and emotions to pick the perfect emoji match for each face in your photos.</p>
                 </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3>Privacy Guaranteed</h3>
-                    <p>Your photos are processed locally and never stored on our servers. Your privacy is our top priority with end-to-end processing security.</p>
-                </div>
-                
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>Lightning Fast Conversions</h3>
-                    <p>Get your emojified photos in seconds with our optimized processing engine, powered by advanced AI technology.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+            </section>
 
-    <section class="more-features">
-        <div class="container">
-            <h2>Everything You Need for Perfect Emoji Transformations</h2>
-            
-            <div class="more-features-grid">
-                <div class="more-feature-item">
-                    <div class="more-feature-icon">
-                        <i class="fas fa-smile"></i>
+            <section class="popular-uses">
+                <div class="container">
+                    <h2>Popular Uses for Emoji Face Transformations</h2>
+                    <p>People love using our emoji transformations for various creative purposes</p>
+                    
+                    <div class="use-cases">
+                        <div class="use-case">
+                            <div class="use-case-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M17 9.2l5.213-3.65a.5.5 0 0 1 .787.41v12.08a.5.5 0 0 1-.787.41L17 14.8V19a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v4.2zm0 3.159l4 2.8V8.84l-4 2.8v.718zM3 6v12h12V6H3zm2 2h2v2H5V8z"/></svg>
+                            </div>
+                            <h3>Social Media Profile Pictures</h3>
+                            <p>Create unique emoji profile pictures that stand out on any platform</p>
+                        </div>
+                        
+                        <div class="use-case">
+                            <div class="use-case-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M13 9h8L11 24v-9H4l9-15v9zm-2 2V7.22L7.532 13H13v4.394L17.263 11H11z"/></svg>
+                            </div>
+                            <h3>Fun Family Photos</h3>
+                            <p>Transform family gatherings into emoji adventures everyone will love</p>
+                        </div>
+                        
+                        <div class="use-case">
+                            <div class="use-case-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-2.29-2.333A17.9 17.9 0 0 1 8.027 13H4.062a8.008 8.008 0 0 0 5.648 6.667zM10.03 13c.151 2.439.848 4.73 1.97 6.752A15.905 15.905 0 0 0 13.97 13h-3.94zm9.908 0h-3.965a17.9 17.9 0 0 1-1.683 6.667A8.008 8.008 0 0 0 19.938 13zM4.062 11h3.965A17.9 17.9 0 0 1 9.71 4.333 8.008 8.008 0 0 0 4.062 11zm5.969 0h3.938A15.905 15.905 0 0 0 12 4.248 15.905 15.905 0 0 0 10.03 11zm4.259-6.667A17.9 17.9 0 0 1 15.973 11h3.965a8.008 8.008 0 0 0-5.648-6.667z"/></svg>
+                            </div>
+                            <h3>Marketing & Brand Content</h3>
+                            <p>Create engaging visual content for your brand's social media campaigns</p>
+                        </div>
                     </div>
-                    <div class="more-feature-content">
-                        <h3>Precise Emoji Matching</h3>
-                        <p>Our AI precisely matches facial expressions with the perfect emoji, capturing the exact mood and emotion of each person.</p>
-                    </div>
-                </div>
-                
-                <div class="more-feature-item">
-                    <div class="more-feature-icon">
-                        <i class="fas fa-image"></i>
-                    </div>
-                    <div class="more-feature-content">
-                        <h3>Background Preservation</h3>
-                        <p>Only faces are transformed while preserving the original background and composition of your photos.</p>
-                    </div>
-                </div>
-                
-                <div class="more-feature-item">
-                    <div class="more-feature-icon">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="more-feature-content">
-                        <h3>High-Quality Results</h3>
-                        <p>Create professional-looking emoji transformations suitable for social media, marketing, or personal use.</p>
-                    </div>
-                </div>
-                
-                <div class="more-feature-item">
-                    <div class="more-feature-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="more-feature-content">
-                        <h3>Multiple Face Detection</h3>
-                        <p>EmojiMyFace can detect and transform multiple faces in a single photo - perfect for group pictures!</p>
+                    
+                    <div class="cta-button-container">
+                        <a href="#" class="cta-button">Create Your Emoji Face Now →</a>
                     </div>
                 </div>
-                
-                <div class="more-feature-item">
-                    <div class="more-feature-icon">
-                        <i class="fas fa-photo-video"></i>
-                    </div>
-                    <div class="more-feature-content">
-                        <h3>Works with Any Photo</h3>
-                        <p>Upload photos from your phone, computer, or social media - our tool works with images from any source.</p>
-                    </div>
-                </div>
-                
-                <div class="more-feature-item">
-                    <div class="more-feature-icon">
-                        <i class="fas fa-lock"></i>
-                    </div>
-                    <div class="more-feature-content">
-                        <h3>Secure Processing</h3>
-                        <p>All image processing happens through secure connections with enterprise-grade encryption standards.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="cta-container">
-                <p>Join over 100,000 users who trust EmojiMyFace for their emoji transformation needs</p>
-                <button class="cta-btn">Try EmojiMyFace Now</button>
-            </div>
-        </div>
-    </section>
+            </section>
 
-    <section class="how-it-works" id="how-it-works">
-        <div class="container">
-            <h2>How EmojiMyFace Works</h2>
-            <p>Transform your photos into emoji art in just three simple steps with our AI-powered emoji conversion technology</p>
-            
-            <div class="steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-icon">
-                        <i class="fas fa-upload"></i>
+            <section class="faq" id="faq">
+                <div class="container">
+                    <h2>Frequently Asked Questions About <span class="highlight">EmojiMyFace</span></h2>
+                    <p>Everything you need to know about our AI-powered emoji face transformation technology</p>
+                    
+                    <div class="faq-items">
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFaq(this)">
+                                <span>What is EmojiMyFace and how does it work?</span>
+                                <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-9h2v6h-2v-6zm0-4h2v2h-2V7z"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                <p>EmojiMyFace is an AI-powered face-to-emoji transformation tool that converts human faces in photos into matching emojis. Our advanced AI technology analyzes facial expressions, features, and emotions in your photos and replaces them with the most appropriate emojis while preserving the background. The entire process is quick, secure, and happens directly in your browser using Google's Gemini AI technology.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFaq(this)">
+                                <span>Is my data safe when using EmojiMyFace?</span>
+                                <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-9h2v6h-2v-6zm0-4h2v2h-2V7z"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes! We process all photos locally in your browser. Your images are never uploaded to our servers, ensuring complete privacy and security.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFaq(this)">
+                                <span>What photo formats and sizes does EmojiMyFace support?</span>
+                                <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-9h2v6h-2v-6zm0-4h2v2h-2V7z"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                <p>EmojiMyFace supports common image formats including JPEG, PNG, and WebP. The maximum file size is 10MB.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFaq(this)">
+                                <span>How accurate is EmojiMyFace at detecting faces and emotions?</span>
+                                <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-9h2v6h-2v-6zm0-4h2v2h-2V7z"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Our AI is highly accurate at detecting faces and emotions in clear photos. For best results, use well-lit images where faces are clearly visible. The technology can recognize various expressions including happiness, sadness, anger, surprise, and more.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFaq(this)">
+                                <span>Can I process multiple faces in one photo with EmojiMyFace?</span>
+                                <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-9h2v6h-2v-6zm0-4h2v2h-2V7z"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                <p>Yes! Our AI can detect and transform multiple faces in a single photo. The exact number depends on the clarity and visibility of faces in the image.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFaq(this)">
+                                <span>How can I use the emoji face images created with EmojiMyFace?</span>
+                                <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-9h2v6h-2v-6zm0-4h2v2h-2V7z"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                <p>You can download your emojified photos and use them for social media profiles, sharing with friends, creating fun content for your brand, or any personal use. The transformed images are perfect for standing out on platforms like Instagram, Twitter, and Facebook.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="faq-item">
+                            <div class="faq-question" onclick="toggleFaq(this)">
+                                <span>Will EmojiMyFace work on my device?</span>
+                                <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><path fill="none" d="M0 0h24v24H0z"/><path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-9h2v6h-2v-6zm0-4h2v2h-2V7z"/></svg>
+                            </div>
+                            <div class="faq-answer">
+                                <p>EmojiMyFace works on most modern devices with updated browsers. We recommend using Chrome, Firefox, Safari, or Edge for the best experience. The app is compatible with both desktop and mobile devices.</p>
+                            </div>
+                        </div>
                     </div>
-                    <h3>Upload Your Photo</h3>
-                    <p>Drag and drop or select any photo containing faces from your device</p>
-                    <p class="step-detail">EmojiMyFace accepts JPEG, PNG, and WebP files up to 10MB in size. You can upload personal photos, group pictures, or any image with visible faces.</p>
-                </div>
-                
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-icon">
-                        <i class="fas fa-magic"></i>
+                    
+                    <div class="faq-contact">
+                        <p>Still have questions about EmojiMyFace or emoji face transformations?</p>
+                        <a href="#contact" class="btn">Contact Us</a>
                     </div>
-                    <h3>AI Emoji Transformation</h3>
-                    <p>Our advanced AI analyzes expressions and matches perfect emojis to each face</p>
-                    <p class="step-detail">Using advanced AI technology, EmojiMyFace detects facial features, age, emotions, and expressions to select the ideal emoji match for each person.</p>
                 </div>
-                
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-icon">
-                        <i class="fas fa-download"></i>
-                    </div>
-                    <h3>Download & Share</h3>
-                    <p>Get your emojified photo instantly and share on social media</p>
-                    <p class="step-detail">Your transformed image is ready in seconds. Download in high resolution and share directly to Instagram, Facebook, Twitter, or save to your device.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+            </section>
+        </main>
 
-    <section class="use-cases">
-        <div class="container">
-            <h2>Popular Uses for Emoji Face Transformations</h2>
-            
-            <div class="use-cases-grid">
-                <div class="use-case">
-                    <img src="images/use-case1.svg" alt="Social Media Profile Pictures">
-                    <h3>Social Media Profile Pictures</h3>
-                    <p>Create unique emoji profile pictures that stand out on any platform</p>
-                </div>
-                
-                <div class="use-case">
-                    <img src="images/use-case2.svg" alt="Fun Family Photos">
-                    <h3>Fun Family Photos</h3>
-                    <p>Transform family gatherings into emoji adventures everyone will love</p>
-                </div>
-                
-                <div class="use-case">
-                    <img src="images/use-case3.svg" alt="Marketing & Brand Content">
-                    <h3>Marketing & Brand Content</h3>
-                    <p>Create engaging visual content for your brand's social media campaigns</p>
-                </div>
-            </div>
-            
-            <button class="cta-btn">Create Your Emoji Face Now →</button>
-            
-            <p class="tech-note">EmojiMyFace uses state-of-the-art AI technology to provide the most accurate and visually appealing emoji face transformations available online.</p>
-        </div>
-    </section>
-
-    <section class="faq" id="faq">
-        <div class="container">
-            <h2>Frequently Asked Questions About EmojiMyFace</h2>
-            <p>Everything you need to know about our AI-powered emoji face transformation technology</p>
-            
-            <div class="faq-container">
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>How does EmojiMyFace work?</h3>
-                        <span class="faq-toggle"><i class="fas fa-plus"></i></span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>EmojiMyFace uses advanced AI algorithms to analyze facial features, expressions, and emotions in your photos. It then matches each face with the most appropriate emoji that captures the essence of the person's expression and appearance.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Is my data safe when I use EmojiMyFace?</h3>
-                        <span class="faq-toggle"><i class="fas fa-plus"></i></span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Yes, your privacy is our top priority. All photo processing happens locally in your browser, and we never store your images on our servers. Your photos are never shared with third parties.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>What file types can I upload?</h3>
-                        <span class="faq-toggle"><i class="fas fa-plus"></i></span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>EmojiMyFace supports JPEG, PNG, and WebP image formats. The maximum file size is 10MB.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Can EmojiMyFace detect multiple faces in one photo?</h3>
-                        <span class="faq-toggle"><i class="fas fa-plus"></i></span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Yes! Our AI can detect and transform multiple faces in a single photo, making it perfect for group pictures and family photos.</p>
-                    </div>
-                </div>
-                
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <h3>Is EmojiMyFace really free?</h3>
-                        <span class="faq-toggle"><i class="fas fa-plus"></i></span>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Yes, EmojiMyFace is completely free to use. There are no hidden fees, subscriptions, or in-app purchases.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="contact-us">
-                <p>Still have questions about EmojiMyFace or emoji face transformations?</p>
-                <a href="#" class="contact-link">Contact Us</a>
-            </div>
-        </div>
-    </section>
-
-    <footer>
-        <div class="container">
+        <footer class="footer">
             <div class="footer-content">
-                <div class="footer-logo">
-                    <h2>EmojiMyFace</h2>
-                    <p>Turn Photos into Emoji Art</p>
+                <div class="footer-container">
+                <div class="footer-column">
+                    <h3>EmojiMyFace</h3>
+                    <p class="footer-description">The ultimate AI-powered emoji face transformation tool. Create amazing emoji avatars from your photos in seconds.</p>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Twitter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg></a>
+                        <a href="#" aria-label="Instagram"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></a>
+                        <a href="#" aria-label="Facebook"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/></svg></a>
+                    </div>
                 </div>
-                <div class="footer-links">
-                    <div class="footer-links-column">
-                        <h3>Features</h3>
-                        <ul>
-                            <li><a href="#">AI Technology</a></li>
-                            <li><a href="#">Privacy</a></li>
-                            <li><a href="#">Fast Processing</a></li>
-                            <li><a href="#">Multiple Faces</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-links-column">
-                        <h3>Resources</h3>
-                        <ul>
-                            <li><a href="#">How It Works</a></li>
-                            <li><a href="#">FAQ</a></li>
-                            <li><a href="#">Contact Us</a></li>
-                            <li><a href="#">Terms of Service</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-links-column">
-                        <h3>Connect</h3>
-                        <ul class="social-links">
-                            <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
-                            <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
-                            <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
-                            <li><a href="#"><i class="fab fa-pinterest"></i> Pinterest</a></li>
-                        </ul>
-                    </div>
+                
+                <div class="footer-column">
+                    <h3>Emoji Transformations</h3>
+                    <ul>
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">How It Works</a></li>
+                        <li><a href="#">Emoji Creator</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Company & Support</h3>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Contact Support</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Friends</h3>
+                    <ul>
+                        <li><a href="#">GoldenRetriever</a></li>
+                        <li><a href="#">Face Symmetry Test</a></li>
+                        <li><a href="#">How Old Do I Look?</a></li>
+                        <li><a href="#">HypeSnail Games</a></li>
+                        <li><a href="#">Meteor Playground</a></li>
+                        <li><a href="#">Hair Style AI</a></li>
+                        <li><a href="#">Merge Brainrot</a></li>
+                    </ul>
+                </div>
                 </div>
             </div>
+            
             <div class="footer-bottom">
-                <p>&copy; 2023 EmojiMyFace. All rights reserved.</p>
-                <div class="footer-bottom-links">
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
+                <div class="footer-container">
+                    <p>&copy; 2023 EmojiMyFace. All rights reserved.</p>
+                    <div class="footer-links">
+                        <a href="#">Privacy</a>
+                        <a href="#">Terms</a>
+                        <a href="#">Back to Top</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </footer>
+        </footer>
 
-    <script src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+    <script src="app.js"></script>
+    <script>
+        function toggleFaq(element) {
+            // Toggle active class on the question
+            element.classList.toggle('active');
+            
+            // Toggle active class on the answer
+            const answer = element.nextElementSibling;
+            answer.classList.toggle('active');
+            
+            // Close other open FAQs
+            const allQuestions = document.querySelectorAll('.faq-question');
+            const allAnswers = document.querySelectorAll('.faq-answer');
+            
+            for (let i = 0; i < allQuestions.length; i++) {
+                if (allQuestions[i] !== element) {
+                    allQuestions[i].classList.remove('active');
+                    allAnswers[i].classList.remove('active');
+                }
+            }
+        }
+    </script>
 </body>
 </html>
