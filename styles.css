@@ -94,7 +94,7 @@ body {
 }
 
 .cta-button:hover {
-    background-color: #222;
+    background-color: #5a3cd7;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
@@ -389,7 +389,7 @@ main {
 }
 
 .create-btn:hover {
-    background-color: #222;
+    background-color: #5a3cd7;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
@@ -593,7 +593,7 @@ main {
 }
 
 .try-now-btn:hover {
-    background-color: #222;
+    background-color: #5a3cd7;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
@@ -765,18 +765,19 @@ main {
 .use-case-icon {
     width: 60px;
     height: 60px;
-    background-color: #f5f5f5;
-    border-radius: 50%;
+    margin-bottom: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 20px;
+    background-color: rgba(90, 60, 215, 0.1);
+    border-radius: 50%;
 }
 
 .use-case-icon svg {
     width: 30px;
     height: 30px;
-    fill: #333;
+    color: var(--primary-color);
+    stroke: var(--primary-color);
 }
 
 .use-case h3 {
@@ -812,7 +813,7 @@ main {
 }
 
 .cta-button:hover {
-    background-color: #3a66d8;
+    background-color: #5a3cd7;
 }
 
 @media (max-width: 992px) {
@@ -918,6 +919,7 @@ main {
     height: 24px;
     fill: #ff4dca;
     transition: transform 0.3s ease;
+    color: var(--primary-color);
 }
 
 .faq-question.active .faq-icon {
@@ -1020,14 +1022,15 @@ main {
 }
 
 .footer-social svg {
-    width: 20px;
-    height: 20px;
-    fill: #fff;
-    transition: fill 0.3s ease;
+    width: 24px;
+    height: 24px;
+    color: #fff;
+    stroke: #fff;
+    transition: transform 0.3s ease;
 }
 
 .footer-social a:hover svg {
-    fill: #ff4dca;
+    transform: scale(1.2);
 }
 
 .footer-column ul {

@@ -43,15 +43,39 @@ async function loadModels() {
 function setupEventListeners() {
     const fileInput = document.getElementById('fileInput');
     const uploadArea = document.getElementById('uploadArea');
-    
+
     // 文件选择
     fileInput.addEventListener('change', handleFileSelect);
-    
+
     // 拖拽上传
     uploadArea.addEventListener('click', () => fileInput.click());
     uploadArea.addEventListener('dragover', handleDragOver);
     uploadArea.addEventListener('dragleave', handleDragLeave);
     uploadArea.addEventListener('drop', handleDrop);
+
+    // 统一处理滚动到上传区域的事件
+    const scrollToUpload = (event) => {
+        event.preventDefault(); // 阻止a标签的默认跳转行为
+        const uploadSection = document.querySelector('.upload-section');
+        if (uploadSection) {
+            uploadSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
+    // 为所有需要滚动的按钮/链接添加事件监听器
+    const scrollTriggers = [
+        '.header .cta-button',
+        '.create-btn',
+        '.cta-button-container .cta-button',
+        '.perfect-emoji .try-now-btn'
+    ];
+
+    scrollTriggers.forEach(selector => {
+        const element = document.querySelector(selector);
+        if (element) {
+            element.addEventListener('click', scrollToUpload);
+        }
+    });
 }
 
 // 处理文件选择
@@ -285,15 +309,31 @@ function setupTabSwitching() {
             // 为当前点击的标签添加active类
             button.classList.add('active');
             
-            // 这里可以添加更多逻辑，例如切换显示的内容
+            // 获取当前点击的标签名称
             const tabName = button.getAttribute('data-tab');
             console.log(`Switched to ${tabName} tab`);
             
-            // 如果有对应的内容需要显示/隐藏，可以在这里处理
-            // 例如：document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
-            // document.querySelector(`.tab-content.${tabName}`).style.display = 'block';
+            // 获取所有示例图片
+            const exampleImages = document.querySelectorAll('.example img');
+            
+            // 根据标签切换图片
+            if (tabName === 'original') {
+                // 显示原始照片
+                if (exampleImages[0]) exampleImages[0].src = './public/images/demo1.webp';
+                if (exampleImages[1]) exampleImages[1].src = './public/images/demo2.webp';
+            } else if (tabName === 'emoji') {
+                // 显示表情符号版本
+                if (exampleImages[0]) exampleImages[0].src = './public/images/emojified-photo1.webp';
+                if (exampleImages[1]) exampleImages[1].src = './public/images/emojified-photo2.webp';
+            }
         });
     });
+    
+    // 初始化时触发默认标签的点击事件
+    const activeTab = document.querySelector('.tab-btn.active');
+    if (activeTab) {
+        activeTab.click();
+    }
 }
 
 // 错误处理
