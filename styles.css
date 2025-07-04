@@ -1145,40 +1145,42 @@ main {
     }
 }
 
-/* 小平板和大手机 (768px 及以下) */
+/* 移动端导航优化 - 替换现有的768px断点样式 */
 @media (max-width: 768px) {
     .container {
         padding: 0 15px;
     }
     
-    /* Header 优化 */
+    /* Header 优化 - 更紧凑的设计 */
     .header {
-        padding: 12px 0;
+        padding: 8px 0; /* 减少垂直padding */
     }
     
     .header-container {
-        flex-direction: column;
-        gap: 15px;
+        /* 保持水平布局，但在更小屏幕上调整 */
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .logo h1 {
+        font-size: 1.3rem; /* 稍微减小logo尺寸 */
     }
     
     .nav-links {
-        gap: 20px;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    
-    .nav-links a {
-        font-size: 0.9rem;
+        display: none; /* 在768px以下隐藏导航链接 */
     }
     
     .cta-button {
-        padding: 8px 16px;
+        padding: 6px 14px;
         font-size: 0.8rem;
+        border-radius: 20px;
     }
     
     /* Hero Section 优化 */
     .hero {
-        padding: 30px 0 20px;
+        padding: 20px 0 15px; /* 减少hero section的padding */
     }
     
     .hero h1 {
@@ -1329,28 +1331,29 @@ main {
     }
 }
 
-/* 手机设备 (480px 及以下) */
+/* 更小屏幕的进一步优化 (480px 及以下) */
 @media (max-width: 480px) {
     .container {
         padding: 0 12px;
     }
     
-    /* Header 进一步优化 */
+    /* Header 进一步紧凑化 */
+    .header {
+        padding: 6px 0;
+    }
+    
     .logo h1 {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
     }
     
-    .nav-links {
-        gap: 15px;
-    }
-    
-    .nav-links a {
-        font-size: 0.85rem;
+    .cta-button {
+        padding: 5px 12px;
+        font-size: 0.75rem;
     }
     
     /* Hero Section 进一步优化 */
     .hero {
-        padding: 25px 0 15px;
+        padding: 15px 0 10px;
     }
     
     .hero h1 {
