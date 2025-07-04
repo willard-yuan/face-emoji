@@ -1117,44 +1117,452 @@ main {
     100% { transform: rotate(360deg); }
 }
 
-/* Responsive Styles */
-@media (max-width: 768px) {
-    .header {
-        flex-direction: column;
-        padding: 15px 0;
-    }
-    
-    .logo {
-        margin-bottom: 15px;
-    }
-    
-    .nav-links {
-        margin-bottom: 15px;
+/* 移动端优化 - 替换现有的响应式样式 */
+
+/* 平板设备 (1024px 及以下) */
+@media (max-width: 1024px) {
+    .container {
+        padding: 0 15px;
     }
     
     .hero h1 {
-        font-size: 2rem;
+        font-size: 2.8rem;
     }
     
+    .features {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+    
+    .steps {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+    
+    .use-cases {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
+}
+
+/* 小平板和大手机 (768px 及以下) */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 15px;
+    }
+    
+    /* Header 优化 */
+    .header {
+        padding: 12px 0;
+    }
+    
+    .header-container {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .nav-links {
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .nav-links a {
+        font-size: 0.9rem;
+    }
+    
+    .cta-button {
+        padding: 8px 16px;
+        font-size: 0.8rem;
+    }
+    
+    /* Hero Section 优化 */
+    .hero {
+        padding: 30px 0 20px;
+    }
+    
+    .hero h1 {
+        font-size: 2.2rem;
+        line-height: 1.3;
+        margin-bottom: 15px;
+    }
+    
+    .hero p {
+        font-size: 0.95rem;
+        margin-bottom: 25px;
+        padding: 0 10px;
+    }
+    
+    .feature-badges {
+        gap: 8px;
+    }
+    
+    .badge {
+        font-size: 0.65rem;
+        padding: 6px 12px;
+    }
+    
+    /* Upload Section 优化 */
+    .upload-section {
+        padding: 25px 0;
+    }
+    
+    .upload-container {
+        max-width: 95%;
+        padding: 25px 15px;
+    }
+    
+    .upload-area {
+        padding: 35px 20px;
+        margin-bottom: 20px;
+    }
+    
+    .upload-icon svg {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .upload-text {
+        font-size: 1.1rem;
+    }
+    
+    .upload-subtext {
+        font-size: 0.9rem;
+    }
+    
+    /* Sections 通用优化 */
+    .why-choose,
+    .perfect-emoji,
+    .how-it-works,
+    .popular-uses,
+    .transformations,
+    .faq {
+        padding: 50px 0;
+    }
+    
+    .why-choose h2,
+    .perfect-emoji h2,
+    .how-it-works h2,
+    .popular-uses h2,
+    .transformations h2,
+    .faq h2 {
+        font-size: 2rem;
+        margin-bottom: 12px;
+    }
+    
+    .why-choose p,
+    .perfect-emoji p,
+    .how-it-works p,
+    .popular-uses p,
+    .transformations p {
+        font-size: 1rem;
+        margin-bottom: 35px;
+        padding: 0 10px;
+    }
+    
+    /* Grid 布局优化 */
+    .features,
+    .steps,
+    .use-cases {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    /* Cards 优化 */
+    .feature,
+    .feature-card,
+    .step,
+    .use-case {
+        padding: 25px 20px;
+    }
+    
+    .feature h3,
+    .feature-card h3,
+    .step h3,
+    .use-case h3 {
+        font-size: 1.2rem;
+    }
+    
+    .feature p,
+    .feature-card p,
+    .step p,
+    .use-case p {
+        font-size: 0.95rem;
+    }
+    
+    /* Examples 优化 */
     .examples {
         flex-direction: column;
-        align-items: center;
+        gap: 25px;
     }
     
     .example {
         max-width: 100%;
-        margin-bottom: 20px;
     }
     
-    .upload-section, .info-section {
-        padding: 20px;
+    /* Footer 优化 */
+    .footer {
+        padding: 40px 0 0;
+    }
+    
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        text-align: center;
+    }
+    
+    .footer-bottom .footer-container {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .footer-links {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+}
+
+/* 手机设备 (480px 及以下) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px;
+    }
+    
+    /* Header 进一步优化 */
+    .logo h1 {
+        font-size: 1.3rem;
+    }
+    
+    .nav-links {
+        gap: 15px;
+    }
+    
+    .nav-links a {
+        font-size: 0.85rem;
+    }
+    
+    /* Hero Section 进一步优化 */
+    .hero {
+        padding: 25px 0 15px;
+    }
+    
+    .hero h1 {
+        font-size: 1.8rem;
+        line-height: 1.4;
+    }
+    
+    .hero p {
+        font-size: 0.9rem;
+        padding: 0 5px;
+    }
+    
+    .badge {
+        font-size: 0.6rem;
+        padding: 5px 10px;
+    }
+    
+    /* Upload Section 进一步优化 */
+    .upload-container {
+        padding: 20px 12px;
     }
     
     .upload-area {
-        padding: 30px 15px;
+        padding: 25px 15px;
     }
     
-    .footer-content {
-        grid-template-columns: 1fr;
+    .upload-icon svg {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .upload-text {
+        font-size: 1rem;
+    }
+    
+    .upload-subtext {
+        font-size: 0.85rem;
+    }
+    
+    /* Buttons 优化 */
+    .btn,
+    .try-now-btn,
+    .create-btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+    }
+    
+    /* Sections 进一步优化 */
+    .why-choose,
+    .perfect-emoji,
+    .how-it-works,
+    .popular-uses,
+    .transformations,
+    .faq {
+        padding: 40px 0;
+    }
+    
+    .why-choose h2,
+    .perfect-emoji h2,
+    .how-it-works h2,
+    .popular-uses h2,
+    .transformations h2,
+    .faq h2 {
+        font-size: 1.7rem;
+    }
+    
+    /* Cards 进一步优化 */
+    .feature,
+    .feature-card,
+    .step,
+    .use-case {
+        padding: 20px 15px;
+    }
+    
+    .step-icon,
+    .use-case-icon {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .step-icon svg,
+    .use-case-icon svg {
+        width: 25px;
+        height: 25px;
+    }
+    
+    /* FAQ 优化 */
+    .faq-question {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .faq-answer.active {
+        padding: 0 15px 12px;
+    }
+    
+    .faq-answer p {
+        font-size: 0.85rem;
+    }
+    
+    /* Canvas 优化 */
+    .canvas-container {
+        margin: 20px 0;
+    }
+    
+    #canvas {
+        border-radius: 8px;
+    }
+}
+
+/* 小手机设备 (360px 及以下) */
+@media (max-width: 360px) {
+    .container {
+        padding: 0 10px;
+    }
+    
+    .hero h1 {
+        font-size: 1.6rem;
+    }
+    
+    .hero p {
+        font-size: 0.85rem;
+    }
+    
+    .upload-container {
+        padding: 15px 10px;
+    }
+    
+    .upload-area {
+        padding: 20px 12px;
+    }
+    
+    .feature,
+    .feature-card,
+    .step,
+    .use-case {
+        padding: 15px 12px;
+    }
+    
+    .btn,
+    .try-now-btn,
+    .create-btn {
+        padding: 10px 16px;
+        font-size: 0.85rem;
+    }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    /* 移除hover效果，改为focus效果 */
+    .feature:hover,
+    .feature-card:hover,
+    .step:hover,
+    .use-case:hover,
+    .example:hover {
+        transform: none;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .btn:hover,
+    .try-now-btn:hover,
+    .create-btn:hover,
+    .cta-button:hover {
+        transform: none;
+    }
+    
+    /* 增加触摸目标大小 */
+    .nav-links a {
+        padding: 8px 4px;
+    }
+    
+    .cta-button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .btn,
+    .try-now-btn,
+    .create-btn {
+        min-height: 44px;
+    }
+    
+    .faq-question {
+        min-height: 44px;
+    }
+    
+    .footer-social a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* 横屏手机优化 */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero {
+        padding: 20px 0 15px;
+    }
+    
+    .hero h1 {
+        font-size: 1.8rem;
+    }
+    
+    .upload-section {
+        padding: 20px 0;
+    }
+    
+    .why-choose,
+    .perfect-emoji,
+    .how-it-works,
+    .popular-uses,
+    .transformations,
+    .faq {
+        padding: 30px 0;
     }
 }
