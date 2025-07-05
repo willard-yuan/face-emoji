@@ -1,5 +1,5 @@
 {
-  "name": "emojimyface",
+  "name": "emojiface",
   "version": "1.0.0",
   "description": "Turn Photos into Emoji Art with AI Face Recognition",
   "main": "index.html",
@@ -16,7 +16,7 @@
     "photo-editing",
     "face-api"
   ],
-  "author": "EmojiMyFace",
+  "author": "EmojiFace",
   "license": "MIT",
   "dependencies": {
     "face-api.js": "^0.22.2",

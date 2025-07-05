@@ -1,4 +1,4 @@
-# EmojiMyFace - Turn Photos into Emoji Art
+# EmojiFace - Turn Photos into Emoji Art
 
 一个基于AI的人脸表情识别和表情符号替换的Web应用，可以将照片中的人脸替换为对应表情的emoji。
 
@@ -32,7 +32,7 @@
 ## 项目结构
 
 ```
-emojimyface5/
+emojiface5/
 ├── index.html              # 主页面
 ├── app.js                  # 主要JavaScript逻辑
 ├── package.json            # 项目配置
@@ -59,7 +59,7 @@ emojimyface5/
 ### 1. 克隆项目
 ```bash
 git clone <repository-url>
-cd emojimyface5
+cd emojiface5
 ```
 
 ### 2. 启动本地服务器
@@ -142,4 +142,4 @@ MIT License - 详见 LICENSE 文件
 
 ---
 
-**EmojiMyFace** - 让你的照片更有趣！ 🎉
+**EmojiFace** - 让你的照片更有趣！ 🎉
