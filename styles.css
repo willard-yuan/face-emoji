@@ -1117,6 +1117,44 @@ main {
     display: block;
 }
 
+#canvas:focus {
+    outline: 2px solid #6c47ff;
+    outline-offset: 2px;
+}
+
+.tooltip {
+    position: absolute;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    z-index: 100;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-width: 280px;
+    line-height: 1.4;
+    transform: translateY(-5px);
+}
+
+.tooltip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -8px;
+    margin-top: -8px;
+    border-width: 8px 8px 8px 0;
+    border-style: solid;
+    border-color: transparent #667eea transparent transparent;
+    filter: drop-shadow(-2px 0 3px rgba(0, 0, 0, 0.1));
+}
+
 .action-buttons {
     margin-top: 20px;
     display: flex;
@@ -1178,7 +1216,8 @@ main {
     height: 100%;
     background: linear-gradient(90deg, #6c47ff, #ff4dca);
     border-radius: 3px;
-    animation: progress 3s ease-in-out infinite;
+    width: 0%;
+    transition: width 0.3s ease-out;
 }
 
 .emoji-preview {
@@ -1227,19 +1266,19 @@ main {
     }
 }
 
-@keyframes progress {
+@keyframes progress-shimmer {
     0% {
-        width: 0%;
-        transform: translateX(-100%);
-    }
-    50% {
-        width: 70%;
-        transform: translateX(0%);
+        background-position: -200% 0;
     }
     100% {
-        width: 100%;
-        transform: translateX(0%);
+        background-position: 200% 0;
     }
+}
+
+.progress-fill.processing {
+    background: linear-gradient(90deg, #6c47ff 25%, #ff4dca 50%, #6c47ff 75%);
+    background-size: 200% 100%;
+    animation: progress-shimmer 2s ease-in-out infinite;
 }
 
 @keyframes bounce {

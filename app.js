@@ -4,6 +4,10 @@ let originalImage = null;
 let processedCanvas = null;
 let selectedEmojiStyle = 'auto';
 let detectedFaces = null;
+let drawnEmojis = [];
+let selectedEmoji = null;
+let progressInterval = null;
+let currentProgress = 0;
 
 // 表情映射
 const expressionMap = {
@@ -34,6 +38,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (applyBtn) {
         applyBtn.addEventListener('click', applyEmojiToFace);
     }
+
+    // 为canvas添加点击事件监听器
+    const canvas = document.getElementById('canvas');
+    if (canvas) {
+        canvas.addEventListener('click', handleCanvasClick);
+        canvas.addEventListener('mousemove', handleCanvasMouseMove);
+        canvas.addEventListener('mouseleave', handleCanvasMouseLeave);
+    }
+
+    // 添加键盘事件监听器
+    window.addEventListener('keydown', handleKeyDown);
 });
 
 // 加载face-api.js模型
@@ -195,29 +210,61 @@ async function detectFacesAndExpressions(img) {
     return detections;
 }
 
+// 显示提示框
+function showTooltip() {
+    const tooltip = document.getElementById('tooltip');
+    if (!tooltip || drawnEmojis.length === 0) return;
+
+    const container = document.querySelector('.uploaded-image-container');
+    const canvas = document.getElementById('canvas');
+    
+    if (!container || !canvas) return;
+
+    // 将tooltip定位在容器的右上角
+    const containerRect = container.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+    
+    // 相对于容器的定位
+    const tooltipTop = 20; // 距离容器顶部20px
+    const tooltipRight = 20; // 距离容器右侧20px
+
+    tooltip.style.top = `${tooltipTop}px`;
+    tooltip.style.right = `${tooltipRight}px`;
+    tooltip.style.left = 'auto'; // 清除之前的left定位
+    tooltip.innerHTML = '💡 Click to select emojis and press Delete key to remove unwanted ones';
+    tooltip.style.display = 'block';
+    tooltip.style.opacity = '1';
+    tooltip.style.transform = 'translateY(0)';
+
+    setTimeout(() => {
+        tooltip.style.opacity = '0';
+        tooltip.style.transform = 'translateY(-10px)';
+        setTimeout(() => {
+            tooltip.style.display = 'none';
+        }, 300); // Corresponds to transition time
+    }, 4000); // 显示4秒
+}
+
 // 在人脸上绘制表情符号
 async function drawEmojiOnFaces(img, detections) {
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const uploadedImage = document.getElementById('uploadedImage');
+    processedCanvas = document.getElementById('canvas');
+    const ctx = processedCanvas.getContext('2d');
     
     // 设置画布尺寸
-    canvas.width = img.width;
-    canvas.height = img.height;
-    
-    // 保持原始图片可见，不隐藏它
-    // uploadedImage.style.display = 'none'; // 注释掉这行，让原始图片在蒙版下保持可见
-    // canvas.style.display = 'block'; // 移除这行，让showLoading控制显示时机
-    
-    // 绘制原始图片
-    ctx.drawImage(img, 0, 0);
+    processedCanvas.width = img.width;
+    processedCanvas.height = img.height;
+
+    // 清空之前绘制的emojis
+    drawnEmojis = [];
+    selectedEmoji = null;
     
     // 为每个检测到的人脸绘制表情符号
     for (const detection of detections) {
         await drawEmojiForDetection(ctx, detection);
     }
-    
-    processedCanvas = canvas;
+
+    redrawCanvas();
+    showTooltip();
 }
 
 // 为单个检测结果绘制表情符号
@@ -252,8 +299,8 @@ function drawEmojiForDetection(ctx, detection) {
             const x = box.x + (box.width - emojiSize) / 2;
             const y = box.y + (box.height - emojiSize) / 2;
             
-            // 绘制表情符号
-            ctx.drawImage(emojiImg, x, y, emojiSize, emojiSize);
+            // 存储emoji信息
+            drawnEmojis.push({ img: emojiImg, x, y, width: emojiSize, height: emojiSize });
             resolve();
         };
         
@@ -312,6 +359,8 @@ function closeImagePreview() {
     originalImage = null;
     detectedFaces = null;
     processedCanvas = null;
+    drawnEmojis = [];
+    selectedEmoji = null;
 }
 
 // 隐藏upload-container
@@ -440,6 +489,8 @@ function showLoading(show) {
         if (uploadedImage) {
             uploadedImage.style.display = 'block';
         }
+        // 启动进度条动画
+        startProgressAnimation();
     } else {
         processingOverlay.style.display = 'none';
         // 当蒙版隐藏时，隐藏原始图片并显示处理后的canvas
@@ -447,7 +498,67 @@ function showLoading(show) {
             uploadedImage.style.display = 'none';
             canvas.style.display = 'block';
         }
+        // 停止进度条动画
+        stopProgressAnimation();
     }
+}
+
+// 启动进度条动画
+function startProgressAnimation() {
+    const progressFill = document.querySelector('.progress-fill');
+    if (!progressFill) return;
+    
+    // 重置进度
+    currentProgress = 0;
+    progressFill.style.width = '0%';
+    progressFill.classList.add('processing');
+    
+    // 清除之前的定时器
+    if (progressInterval) {
+        clearInterval(progressInterval);
+    }
+    
+    // 启动进度条动画，分阶段增长
+    progressInterval = setInterval(() => {
+        if (currentProgress < 85) {
+            // 前85%比较快速增长
+            if (currentProgress < 30) {
+                currentProgress += Math.random() * 8 + 2; // 2-10%的随机增长
+            } else if (currentProgress < 60) {
+                currentProgress += Math.random() * 5 + 1; // 1-6%的随机增长
+            } else {
+                currentProgress += Math.random() * 2 + 0.5; // 0.5-2.5%的缓慢增长
+            }
+            
+            // 确保不超过85%
+            currentProgress = Math.min(currentProgress, 85);
+            progressFill.style.width = currentProgress + '%';
+        }
+        // 在85%后停止自动增长，等待处理完成
+    }, 200); // 每200ms更新一次
+}
+
+// 停止进度条动画并完成
+function stopProgressAnimation() {
+    const progressFill = document.querySelector('.progress-fill');
+    if (!progressFill) return;
+    
+    // 清除定时器
+    if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+    }
+    
+    // 快速完成到100%
+    currentProgress = 100;
+    progressFill.style.width = '100%';
+    
+    // 500ms后移除processing类和重置
+    setTimeout(() => {
+        progressFill.classList.remove('processing');
+        currentProgress = 0;
+        progressFill.style.width = '0%';
+    }, 500);
 }
 
 // 下载处理后的图片
@@ -511,6 +622,103 @@ function setupTabSwitching() {
     const activeTab = document.querySelector('.tab-btn.active');
     if (activeTab) {
         activeTab.click();
+    }
+}
+
+// 重绘canvas
+function redrawCanvas() {
+    if (!processedCanvas || !originalImage) return;
+    const ctx = processedCanvas.getContext('2d');
+
+    // 清除canvas并绘制原始图片
+    ctx.clearRect(0, 0, processedCanvas.width, processedCanvas.height);
+    ctx.drawImage(originalImage, 0, 0);
+
+    // 绘制所有emojis
+    drawnEmojis.forEach(emoji => {
+        ctx.drawImage(emoji.img, emoji.x, emoji.y, emoji.width, emoji.height);
+    });
+
+    // 如果有选中的emoji，绘制高亮边框
+    if (selectedEmoji) {
+        ctx.strokeStyle = '#6c47ff'; // 亮紫色
+        ctx.lineWidth = 4;
+        ctx.strokeRect(selectedEmoji.x, selectedEmoji.y, selectedEmoji.width, selectedEmoji.height);
+    }
+}
+
+// 处理canvas鼠标移动事件
+function handleCanvasMouseMove(event) {
+    if (drawnEmojis.length === 0) return;
+
+    const canvas = event.target;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+
+    // 查找鼠标悬停的emoji
+    let hoveredEmoji = null;
+    for (let i = drawnEmojis.length - 1; i >= 0; i--) {
+        const emoji = drawnEmojis[i];
+        if (x >= emoji.x && x <= emoji.x + emoji.width && y >= emoji.y && y <= emoji.y + emoji.height) {
+            hoveredEmoji = emoji;
+            break;
+        }
+    }
+
+    // 根据是否悬停在emoji上设置鼠标样式和选中状态
+    if (hoveredEmoji) {
+        canvas.style.cursor = 'pointer';
+        // 只有当鼠标在emoji区域内时才设置为选中状态
+        if (selectedEmoji !== hoveredEmoji) {
+            selectedEmoji = hoveredEmoji;
+            redrawCanvas();
+        }
+    } else {
+        canvas.style.cursor = 'default';
+        // 鼠标不在任何emoji区域时，清除选中状态
+        if (selectedEmoji) {
+            selectedEmoji = null;
+            redrawCanvas();
+        }
+    }
+}
+
+// 处理canvas鼠标离开事件
+function handleCanvasMouseLeave(event) {
+    // 当鼠标离开canvas区域时，清除选中状态和鼠标样式
+    const canvas = event.target;
+    canvas.style.cursor = 'default';
+    
+    if (selectedEmoji) {
+        selectedEmoji = null;
+        redrawCanvas();
+    }
+}
+
+// 处理canvas点击事件
+function handleCanvasClick(event) {
+    // 点击事件现在主要用于其他交互，选中状态由鼠标移动事件控制
+    // 可以在这里添加其他点击相关的逻辑，比如双击编辑等
+}
+
+// 处理键盘按下事件
+function handleKeyDown(event) {
+    if (!selectedEmoji) return;
+
+    if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault(); // 防止浏览器后退
+
+        // 从数组中移除选中的emoji
+        const index = drawnEmojis.indexOf(selectedEmoji);
+        if (index > -1) {
+            drawnEmojis.splice(index, 1);
+        }
+
+        selectedEmoji = null;
+        redrawCanvas();
     }
 }
 
