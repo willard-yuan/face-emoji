@@ -2,6 +2,8 @@
 let isModelsLoaded = false;
 let originalImage = null;
 let processedCanvas = null;
+let selectedEmojiStyle = 'auto';
+let detectedFaces = null;
 
 // 表情映射
 const expressionMap = {
@@ -19,6 +21,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadModels();
     setupEventListeners();
     setupTabSwitching();
+    setupEmojiSelection();
+    
+    // 设置关闭按钮事件
+    const closeBtn = document.getElementById('closePreview');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeImagePreview);
+    }
+    
+    // 设置应用emoji按钮事件
+    const applyBtn = document.getElementById('applyEmoji');
+    if (applyBtn) {
+        applyBtn.addEventListener('click', applyEmojiToFace);
+    }
 });
 
 // 加载face-api.js模型
@@ -111,11 +126,6 @@ function handleDrop(event) {
 
 // 处理图片
 async function processImage(file) {
-    if (!isModelsLoaded) {
-        alert('AI models are still loading. Please wait a moment.');
-        return;
-    }
-    
     // 验证文件类型
     if (!file.type.startsWith('image/')) {
         alert('Please select a valid image file.');
@@ -128,32 +138,20 @@ async function processImage(file) {
         return;
     }
     
-    showLoading(true);
-    
     try {
         // 创建图片元素
         const img = await createImageFromFile(file);
         originalImage = img;
         
-        // 进行人脸检测和表情识别
-        const detections = await detectFacesAndExpressions(img);
+        // 隐藏upload-container
+        hideUploadContainer();
         
-        if (detections.length === 0) {
-            alert('No faces detected in the image. Please try another photo.');
-            showLoading(false);
-            return;
-        }
-        
-        // 绘制结果
-        await drawEmojiOnFaces(img, detections);
-        
-        showLoading(false);
-        document.getElementById('downloadBtn').style.display = 'inline-block';
+        // 显示图片预览
+        showImagePreview(img);
         
     } catch (error) {
         console.error('Error processing image:', error);
         alert('Error processing image. Please try again.');
-        showLoading(false);
     }
 }
 
@@ -201,11 +199,15 @@ async function detectFacesAndExpressions(img) {
 async function drawEmojiOnFaces(img, detections) {
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    const uploadedImage = document.getElementById('uploadedImage');
     
     // 设置画布尺寸
     canvas.width = img.width;
     canvas.height = img.height;
-    canvas.style.display = 'block';
+    
+    // 保持原始图片可见，不隐藏它
+    // uploadedImage.style.display = 'none'; // 注释掉这行，让原始图片在蒙版下保持可见
+    // canvas.style.display = 'block'; // 移除这行，让showLoading控制显示时机
     
     // 绘制原始图片
     ctx.drawImage(img, 0, 0);
@@ -221,17 +223,24 @@ async function drawEmojiOnFaces(img, detections) {
 // 为单个检测结果绘制表情符号
 function drawEmojiForDetection(ctx, detection) {
     return new Promise((resolve) => {
-        // 获取最高分数的表情
-        const expressions = detection.expressions;
-        let maxExpression = 'neutral';
-        let maxScore = 0;
+        let emojiName = 'neutral';
         
-        Object.keys(expressions).forEach(expression => {
-            if (expressions[expression] > maxScore) {
-                maxScore = expressions[expression];
-                maxExpression = expression;
-            }
-        });
+        // 根据选择的样式决定emoji
+        if (selectedEmojiStyle === 'auto') {
+            // AI自动选择：获取最高分数的表情
+            const expressions = detection.expressions;
+            let maxScore = 0;
+            
+            Object.keys(expressions).forEach(expression => {
+                if (expressions[expression] > maxScore) {
+                    maxScore = expressions[expression];
+                    emojiName = expression;
+                }
+            });
+        } else {
+            // 用户选择的固定样式
+            emojiName = getEmojiByStyle(selectedEmojiStyle);
+        }
         
         // 创建表情图片
         const emojiImg = new Image();
@@ -249,26 +258,195 @@ function drawEmojiForDetection(ctx, detection) {
         };
         
         emojiImg.onerror = () => {
-            console.error(`Failed to load emoji: ${maxExpression}`);
+            console.error(`Failed to load emoji: ${emojiName}`);
             resolve();
         };
         
-        emojiImg.src = `./public/emojis/${maxExpression}.png`;
+        emojiImg.src = `./public/emojis/${emojiName}.png`;
     });
+}
+
+// 根据样式获取emoji名称
+function getEmojiByStyle(style) {
+    const styleMap = {
+        'happy': 'blush',
+        'funny': 'stuck_out_tongue_winking_eye',
+        'cool': 'sunglasses',
+        'cute': 'happy',
+        'animal': 'cat'
+    };
+    
+    return styleMap[style] || 'neutral';
+}
+
+// 显示图片预览
+function showImagePreview(img) {
+    const imagePreviewSection = document.getElementById('imagePreviewSection');
+    const uploadedImage = document.getElementById('uploadedImage');
+    
+    uploadedImage.src = img.src;
+    imagePreviewSection.style.display = 'block';
+    
+    // 滚动到预览区域
+    imagePreviewSection.scrollIntoView({ behavior: 'smooth' });
+}
+
+// 关闭图片预览
+function closeImagePreview() {
+    const imagePreviewSection = document.getElementById('imagePreviewSection');
+    const canvas = document.getElementById('canvas');
+    const uploadedImage = document.getElementById('uploadedImage');
+    const actionButtons = document.getElementById('actionButtons');
+    const processingOverlay = document.getElementById('processingOverlay');
+    
+    imagePreviewSection.style.display = 'none';
+    canvas.style.display = 'none';
+    uploadedImage.style.display = 'block';
+    actionButtons.style.display = 'none';
+    processingOverlay.style.display = 'none';
+    
+    // 显示upload-container
+    showUploadContainer();
+    
+    // 重置变量
+    originalImage = null;
+    detectedFaces = null;
+    processedCanvas = null;
+}
+
+// 隐藏upload-container
+function hideUploadContainer() {
+    const uploadContainer = document.querySelector('.upload-container');
+    if (uploadContainer) {
+        uploadContainer.style.display = 'none';
+    }
+}
+
+// 显示upload-container
+function showUploadContainer() {
+    const uploadContainer = document.querySelector('.upload-container');
+    if (uploadContainer) {
+        uploadContainer.style.display = 'block';
+    }
+}
+
+// 上传新图片
+function uploadNewImage() {
+    // 重置所有状态
+    closeImagePreview();
+    
+    // 清空文件输入
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    // 滚动到上传区域
+    const uploadSection = document.querySelector('.upload-section');
+    if (uploadSection) {
+        uploadSection.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// 设置emoji选择器
+function setupEmojiSelection() {
+    const emojiOptions = document.querySelectorAll('.emoji-option');
+    
+    emojiOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            // 移除所有active类
+            emojiOptions.forEach(opt => opt.classList.remove('active'));
+            
+            // 为当前选项添加active类
+            option.classList.add('active');
+            
+            // 更新选中的emoji样式
+            selectedEmojiStyle = option.getAttribute('data-style');
+        });
+    });
+}
+
+// 应用emoji到人脸
+async function applyEmojiToFace() {
+    if (!originalImage) {
+        alert('Please upload an image first.');
+        return;
+    }
+
+    if (!isModelsLoaded) {
+        alert('AI models are still loading. Please wait a moment.');
+        return;
+    }
+
+    showLoading(true);
+
+    // 使用setTimeout延迟耗时操作，确保UI先更新
+    setTimeout(async () => {
+        const startTime = Date.now();
+        const minDisplayTime = 3000; // 3秒
+
+        try {
+            // 进行人脸检测
+            detectedFaces = await detectFacesAndExpressions(originalImage);
+
+            if (detectedFaces.length === 0) {
+                const elapsedTime = Date.now() - startTime;
+                const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+                setTimeout(() => {
+                    showLoading(false);
+                    alert('No faces detected in the image. Please try another photo.');
+                }, remainingTime);
+                return;
+            }
+
+            // 根据选择的样式绘制emoji
+            await drawEmojiOnFaces(originalImage, detectedFaces);
+
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+            setTimeout(() => {
+                showLoading(false);
+                document.getElementById('actionButtons').style.display = 'flex';
+            }, remainingTime);
+
+        } catch (error) {
+            console.error('Error applying emoji:', error);
+
+            const elapsedTime = Date.now() - startTime;
+            const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
+
+            setTimeout(() => {
+                showLoading(false);
+                alert('Error applying emoji. Please try again.');
+            }, remainingTime);
+        }
+    }, 50); // 延迟50毫秒，给浏览器渲染UI的时间
 }
 
 // 显示/隐藏加载状态
 function showLoading(show) {
-    const loading = document.getElementById('loading');
+    const processingOverlay = document.getElementById('processingOverlay');
     const canvas = document.getElementById('canvas');
-    const downloadBtn = document.getElementById('downloadBtn');
+    const uploadedImage = document.getElementById('uploadedImage');
+    const actionButtons = document.getElementById('actionButtons');
     
     if (show) {
-        loading.style.display = 'block';
+        processingOverlay.style.display = 'flex';
         canvas.style.display = 'none';
-        downloadBtn.style.display = 'none';
+        actionButtons.style.display = 'none';
+        // 保持原始图片可见，在蒙版下方
+        if (uploadedImage) {
+            uploadedImage.style.display = 'block';
+        }
     } else {
-        loading.style.display = 'none';
+        processingOverlay.style.display = 'none';
+        // 当蒙版隐藏时，隐藏原始图片并显示处理后的canvas
+        if (processedCanvas) {
+            uploadedImage.style.display = 'none';
+            canvas.style.display = 'block';
+        }
     }
 }
 

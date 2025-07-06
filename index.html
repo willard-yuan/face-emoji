@@ -10,9 +10,6 @@
     <link rel="stylesheet" href="styles.css">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4184498324686509" 
          crossorigin="anonymous"></script>
-    <script async custom-element="amp-auto-ads" 
-            src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"> 
-    </script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -37,9 +34,6 @@
     </script>
 </head>
 <body>
-    <amp-auto-ads type="adsense" 
-            data-ad-client="ca-pub-4184498324686509"> 
-    </amp-auto-ads>
     <header class="header">
         <div class="container header-container">
             <div class="logo">
@@ -92,11 +86,103 @@
                     <p>Processing your photo with AI...</p>
                 </div>
                 
-                <div class="canvas-container">
-                    <canvas id="canvas"></canvas>
+                <!-- Image Preview Section -->
+                <div class="image-preview-section" id="imagePreviewSection" style="display: none;">
+                    <!-- Processing overlay -->
+                    <div class="processing-overlay" id="processingOverlay" style="display: none;">
+                        <div class="processing-content">
+                            <div class="processing-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                            </div>
+                            <h3>Analyzing facial features...</h3>
+                            <div class="progress-bar">
+                                <div class="progress-fill"></div>
+                            </div>
+                            <div class="emoji-preview">
+                                <span>😊</span>
+                                <span>😮</span>
+                                <span>😲</span>
+                                <span>✨</span>
+                                <span>🎭</span>
+                                <span>🎨</span>
+                            </div>
+                            <p>There are over 3,600 emojis in the Unicode Standard.</p>
+                            <p class="completion-time">Estimated completion in 10 seconds...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="uploaded-image-container">
+                        <img id="uploadedImage" src="" alt="Uploaded photo" />
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <button class="close-btn" id="closeImageBtn" onclick="closeImagePreview()">&times;</button>
+                        
+                        <!-- Action buttons container -->
+                        <div class="action-buttons" id="actionButtons" style="display: none;">
+                            <button class="btn" id="downloadBtn" onclick="downloadImage()">Download Emoji Photo</button>
+                            <button class="btn upload-new-btn" id="uploadNewBtn" onclick="uploadNewImage()">Upload New Image</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Emoji Style Selection -->
+                    <div class="emoji-selection">
+                        <div class="emoji-selection-header">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg>
+                            <span>Choose Emoji Style</span>
+                        </div>
+                        
+                        <div class="emoji-options">
+                            <div class="emoji-option active" data-style="auto">
+                                <div class="emoji-icon">🤖</div>
+                                <div class="emoji-label">
+                                    <strong>Auto</strong>
+                                    <span>Let AI choose the best emoji</span>
+                                </div>
+                            </div>
+                            
+                            <div class="emoji-option" data-style="happy">
+                                <div class="emoji-icon">😊</div>
+                                <div class="emoji-label">
+                                    <strong>Happy</strong>
+                                    <span>Always use happy faces</span>
+                                </div>
+                            </div>
+                            
+                            <div class="emoji-option" data-style="funny">
+                                <div class="emoji-icon">😜</div>
+                                <div class="emoji-label">
+                                    <strong>Funny</strong>
+                                    <span>Use funny and silly emojis</span>
+                                </div>
+                            </div>
+                            
+                            <div class="emoji-option" data-style="cool">
+                                <div class="emoji-icon">😎</div>
+                                <div class="emoji-label">
+                                    <strong>Cool</strong>
+                                    <span>Use cool and stylish emojis</span>
+                                </div>
+                            </div>
+                            
+                            <div class="emoji-option" data-style="cute">
+                                <div class="emoji-icon">🥰</div>
+                                <div class="emoji-label">
+                                    <strong>Cute</strong>
+                                    <span>Use cute and adorable emojis</span>
+                                </div>
+                            </div>
+                            
+                            <div class="emoji-option" data-style="animal">
+                                <div class="emoji-icon">🐱</div>
+                                <div class="emoji-label">
+                                    <strong>Animal</strong>
+                                    <span>Use animal face emojis</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn emoji-apply-btn" id="emojiApplyBtn" onclick="applyEmojiToFace()">Click to add Emoji to Face</button>
+                    </div>
                 </div>
-                
-                <button class="btn" id="downloadBtn" style="display: none;" onclick="downloadImage()">Download Emoji Photo</button>
             </div>
         </section>
 
