@@ -1548,6 +1548,11 @@ main {
     
     .feature-badges {
         gap: 8px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        width: 100%;
+        max-width: 450px;
+        margin: 10px auto 0;
     }
     
     .badge {
@@ -1717,6 +1722,13 @@ main {
         padding: 0 5px;
     }
     
+    .feature-badges {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        max-width: 100%;
+        margin: 8px auto 0;
+    }
+    
     .badge {
         font-size: 0.6rem;
         padding: 5px 10px;
@@ -1748,6 +1760,22 @@ main {
     .image-preview-section {
         padding: 15px 10px;
         margin: 15px 0;
+    }
+}
+
+/* 超小屏幕的优化 (375px 及以下) */
+@media (max-width: 375px) {
+    .feature-badges {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px;
+        max-width: 280px;
+        margin: 6px auto 0;
+    }
+    
+    .badge {
+        font-size: 0.55rem;
+        padding: 4px 8px;
+        border-radius: 15px;
     }
     
     #uploadedImage {
@@ -1852,8 +1880,6 @@ main {
     .faq-answer p {
         font-size: 0.85rem;
     }
-    
-
 }
 
 /* 小手机设备 (360px 及以下) */
@@ -1868,6 +1894,18 @@ main {
     
     .hero p {
         font-size: 0.85rem;
+    }
+    
+    .feature-badges {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+        max-width: 260px;
+        margin: 5px auto 0;
+    }
+    
+    .badge {
+        font-size: 0.5rem;
+        padding: 4px 6px;
     }
     
     .upload-container {
