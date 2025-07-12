@@ -106,6 +106,16 @@ function setupEventListeners() {
             element.addEventListener('click', scrollToUpload);
         }
     });
+    
+    // 设置联系我们按钮的点击事件
+    const contactUsBtn = document.querySelector('.faq-contact .btn');
+    if (contactUsBtn) {
+        contactUsBtn.addEventListener('click', function(event) {
+            event.preventDefault();
+            window.location.href = 'mailto:willardyuan@gmail.com?subject=EmojiFace%20Inquiry';
+        });
+    }
+
 }
 
 // 处理文件选择
