@@ -2,7 +2,7 @@
 let isModelsLoaded = false;
 let originalImage = null;
 let processedCanvas = null;
-let selectedEmojiStyle = 'auto';
+let selectedEmojiStyle = 'random_labubu';
 let detectedFaces = null;
 let drawnEmojis = [];
 let selectedEmoji = null;
@@ -296,7 +296,15 @@ function drawEmojiForDetection(ctx, detection) {
             });
         } else {
             // 用户选择的固定样式
-            emojiName = getEmojiByStyle(selectedEmojiStyle);
+            if (selectedEmojiStyle === 'random_labubu') {
+                // 为每个人脸随机选择labubu emoji
+                emojiName = getRandomLabubuEmoji();
+            } else if (selectedEmojiStyle === 'labubu') {
+                // 为Happy Labubu选项随机选择指定的labubu emoji
+                emojiName = getHappyLabubuEmoji();
+            } else {
+                emojiName = getEmojiByStyle(selectedEmojiStyle);
+            }
         }
         
         // 创建表情图片
@@ -305,12 +313,22 @@ function drawEmojiForDetection(ctx, detection) {
             const box = detection.detection.box;
             
             // 计算表情符号的位置和大小
-            const emojiSize = Math.max(box.width, box.height) * 1.2;
-            const x = box.x + (box.width - emojiSize) / 2;
-            const y = box.y + (box.height - emojiSize) / 2;
+            let emojiSize, x, y;
             
-            // 存储emoji信息
-            drawnEmojis.push({ img: emojiImg, x, y, width: emojiSize, height: emojiSize });
+            if (emojiName.includes('labubu_emoji')) {
+                // 对于所有labubu emoji，使用较小的尺寸以避免耳朵覆盖人脸外区域
+                emojiSize = Math.max(box.width, box.height) * 0.98;
+                x = box.x + (box.width - emojiSize) / 2;
+                y = box.y - emojiImg.height / 2.8;
+                drawnEmojis.push({ img: emojiImg, x, y, width: emojiSize, height: emojiSize + emojiImg.height / 2.8 });
+            } else {
+                // 其他emoji使用原来的尺寸
+                emojiSize = Math.max(box.width, box.height) * 0.95;
+                x = box.x + (box.width - emojiSize) / 2;
+                y = box.y + (box.height - emojiSize) / 2;
+                // 存储emoji信息
+                drawnEmojis.push({ img: emojiImg, x, y, width: emojiSize, height: emojiSize });
+            }
             resolve();
         };
         
@@ -329,11 +347,45 @@ function getEmojiByStyle(style) {
         'happy': 'blush',
         'funny': 'stuck_out_tongue_winking_eye',
         'cool': 'sunglasses',
-        'cute': 'happy',
-        'animal': 'cat'
+        'labubu': 'happy_labubu',
+        'random_labubu': 'random_labubu'
     };
     
     return styleMap[style] || 'neutral';
+}
+
+// 随机选择Happy Labubu emoji
+function getHappyLabubuEmoji() {
+    const happyLabubuEmojis = [
+        'labubu_emoji2',
+        'labubu_emoji3',
+        'labubu_emoji5',
+        'labubu_emoji8',
+        'labubu_emoji10'
+    ];
+    
+    const randomIndex = Math.floor(Math.random() * happyLabubuEmojis.length);
+    return happyLabubuEmojis[randomIndex];
+}
+
+// 随机选择labubu emoji (用于Random Labubu选项)
+function getRandomLabubuEmoji() {
+    const labubuEmojis = [
+        'labubu_emoji1',
+        'labubu_emoji2',
+        'labubu_emoji3',
+        'labubu_emoji4',
+        'labubu_emoji5',
+        'labubu_emoji6',
+        'labubu_emoji7',
+        'labubu_emoji8',
+        'labubu_emoji9',
+        'labubu_emoji10',
+        'labubu_emoji11'
+    ];
+    
+    const randomIndex = Math.floor(Math.random() * labubuEmojis.length);
+    return labubuEmojis[randomIndex];
 }
 
 // 显示图片预览
