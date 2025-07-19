@@ -6,7 +6,7 @@
 ## 已完成的SEO优化项目
 
 ### 1. 页面标题和元数据优化
-- ✅ 更新页面标题："Mask Face with Emoji AI | Free Face AI Emoji Generator | EmojiFace.US"
+- ✅ 更新页面标题："Mask Face with Labubu Emoji | Free Face Emoji Tool | EmojiFace.US"
 - ✅ 优化meta description，包含目标关键词
 - ✅ 更新meta keywords，重点突出"mask face", "emoji face", "face ai"
 - ✅ 添加Open Graph标签用于社交媒体分享
