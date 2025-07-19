@@ -674,7 +674,7 @@ function setupTabSwitching() {
                 if (exampleImages[1]) exampleImages[1].src = './public/images/demo2.webp';
             } else if (tabName === 'emoji') {
                 // 显示表情符号版本
-                if (exampleImages[0]) exampleImages[0].src = './public/images/emojified-photo1.webp';
+                if (exampleImages[0]) exampleImages[0].src = './public/images/emojified-photo2.webp';
                 if (exampleImages[1]) exampleImages[1].src = './public/images/emojified-photo2.webp';
             }
         });
