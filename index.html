@@ -40,12 +40,15 @@
     <!-- Preload critical resources for better performance -->
     <link rel="preload" href="styles.css" as="style">
     <link rel="preload" href="seo-optimization.css" as="style">
+    <link rel="preload" href="seo-monitor.js" as="script">
+    <link rel="preload" href="analytics-config.js" as="script">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
     <!-- DNS prefetch for external resources -->
     <link rel="dns-prefetch" href="//www.google-analytics.com">
     <link rel="dns-prefetch" href="//www.googletagmanager.com">
+    <link rel="dns-prefetch" href="//search.google.com">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4184498324686509" 
          crossorigin="anonymous"></script>
     <script type="application/ld+json">
@@ -250,15 +253,17 @@
     <header class="header" role="banner">
         <div class="container header-container">
             <div class="logo">
-                <h1 itemprop="name">EmojiFace.US</h1>
+                <h1 itemprop="name"><a href="index.html" style="text-decoration: none; color: inherit;">EmojiFace.US</a></h1>
             </div>
-            <nav class="nav-links" role="navigation" itemscope itemtype="https://schema.org/SiteNavigationElement">
-                <a href="#" itemprop="url">Features</a>
-                <a href="#how-it-works" itemprop="url">How It Works</a>
-                <a href="#faq" itemprop="url">FAQ</a>
-                <a href="blog.html" itemprop="url">Blog</a>
-            </nav>
-            <button class="cta-button" role="button">Get Started</button>
+            <div class="nav-wrapper">
+                <nav class="nav-links" role="navigation" itemscope itemtype="https://schema.org/SiteNavigationElement">
+                    <a href="#" itemprop="url">Features</a>
+                    <a href="#how-it-works" itemprop="url">How It Works</a>
+                    <a href="#faq" itemprop="url">FAQ</a>
+                    <a href="blog.html" itemprop="url">Blog</a>
+                </nav>
+                <button class="cta-button" role="button">Get Started</button>
+            </div>
         </div>
     </header>
     
@@ -270,10 +275,9 @@
                     <p itemprop="description">Transform your photos with our advanced face AI technology. Mask face with emojis and Labubu emoji instantly for privacy protection and fun social media content. Create amazing emoji face art and Labubu face for free!</p>
                     <div class="hero-buttons">
                         <div class="feature-badges">
-                            <span class="badge">Mask Face with AI</span>
-                            <span class="badge">Emoji Face Generator</span>
-                            <span class="badge">Labubu Emoji Generator</span>
-                            <span class="badge">Face AI Technology</span>
+                            <span class="badge">Mask Face with Labubu</span>
+                            <span class="badge">Labubu Emoji</span>
+                            <span class="badge">Face AI Tool</span>
                             <span class="badge">100% Free Service</span>
                             <span class="badge">Privacy Protected</span>
                             <span class="badge">Instant Face Masking</span>
@@ -779,10 +783,14 @@
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="app.js"></script>
     
-    <script>
+    <!-- SEO Monitoring and Analytics -->
+    <script src="seo-monitor.js"></script>
+    <script src="analytics-config.js"></script>
+    
+    <!-- <script>
         window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
     </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
+    <script defer src="/_vercel/speed-insights/script.js"></script> -->
     <script>
         function toggleFaq(element) {
             // Toggle active class on the question
@@ -803,6 +811,93 @@
                 }
             }
         }
+        
+        // SEO Integration and Tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化SEO监控
+            if (typeof SEOMonitor !== 'undefined') {
+                const seoMonitor = new SEOMonitor();
+                const seoReport = seoMonitor.generateReport();
+                
+                // 在控制台显示SEO报告
+                console.log('🔍 SEO Analysis Report:', seoReport);
+                
+                // 如果SEO得分低于80，显示警告
+                if (seoReport.overallScore < 80) {
+                    console.warn('⚠️ SEO Score is below 80. Recommendations:', seoReport.recommendations);
+                }
+            }
+            
+            // 跟踪页面特定的转化事件
+            const uploadButton = document.querySelector('.upload-btn, .cta-button');
+            if (uploadButton) {
+                uploadButton.addEventListener('click', function() {
+                    if (typeof trackConversion !== 'undefined') {
+                        trackConversion('face_upload');
+                    }
+                });
+            }
+            
+            // 跟踪功能页面访问
+            const featureLinks = document.querySelectorAll('a[href*="features"], a[href*="how-it-works"], a[href*="faq"], a[href*="blog"]');
+            featureLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    const href = this.getAttribute('href');
+                    let goalType = 'feature_page_visit';
+                    
+                    if (href.includes('blog')) goalType = 'blog_visit';
+                    else if (href.includes('features')) goalType = 'feature_page_visit';
+                    
+                    if (typeof trackConversion !== 'undefined') {
+                        trackConversion(goalType);
+                    }
+                });
+            });
+            
+            // 跟踪FAQ互动
+            const faqQuestions = document.querySelectorAll('.faq-question');
+            faqQuestions.forEach(question => {
+                question.addEventListener('click', function() {
+                    const questionText = this.querySelector('span').textContent.substring(0, 50);
+                    if (typeof trackEngagement !== 'undefined') {
+                        trackEngagement('faq_click', questionText);
+                    }
+                });
+            });
+            
+            // 跟踪用户互动
+            const interactiveElements = document.querySelectorAll('button, .btn, .card, .feature-item, .cta-button');
+            interactiveElements.forEach(element => {
+                element.addEventListener('click', function() {
+                    const elementText = this.textContent.trim().substring(0, 50);
+                    const elementClass = this.className || 'unknown';
+                    
+                    if (typeof trackEngagement !== 'undefined') {
+                        trackEngagement('click', `${elementClass}: ${elementText}`);
+                    }
+                });
+            });
+        });
+        
+        // 页面卸载时的最终SEO检查
+        window.addEventListener('beforeunload', function() {
+            if (typeof SEOMonitor !== 'undefined') {
+                const seoMonitor = new SEOMonitor();
+                const finalReport = seoMonitor.generateReport();
+                
+                // 发送最终报告（如果有服务器端点）
+                if (navigator.sendBeacon && finalReport.overallScore) {
+                    const reportData = JSON.stringify({
+                        type: 'seo_final_report',
+                        data: finalReport,
+                        session_duration: Date.now() - performance.timing.navigationStart
+                    });
+                    
+                    // 这里可以替换为实际的数据收集端点
+                    // navigator.sendBeacon('/api/seo-report', reportData);
+                }
+            }
+        });
     </script>
 </body>
 </html>

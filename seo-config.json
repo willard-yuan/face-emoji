@@ -1,0 +1,131 @@
+{
+  "seo_optimization": {
+    "title_template": "{{title}} | EmojiFace.US - Mask Face with Labubu Emoji",
+    "default_description": "Mask face with AI-powered emoji generator including Labubu emoji. Transform photos into emoji face art instantly. Free face Emoji tool for privacy and fun.",
+    "keywords": {
+      "primary": ["mask face", "emoji face", "face ai", "emoji face generator", "labubu emoji"],
+      "secondary": ["labubu face", "face ai filter", "emoji mask", "face to emoji", "ai face mask"],
+      "long_tail": [
+        "mask face with emoji ai",
+        "free face ai emoji generator", 
+        "emoji face maker online",
+        "ai face mask generator",
+        "face to emoji converter",
+        "labubu emoji generator online",
+        "face privacy emoji mask",
+        "ai powered emoji face tool"
+      ]
+    },
+    "structured_data": {
+      "organization": {
+        "name": "EmojiFace.US",
+        "url": "https://EmojiFace.US",
+        "logo": "https://EmojiFace.US/public/favicon.ico",
+        "description": "AI-powered emoji face generator and Labubu emoji creator for privacy and fun",
+        "sameAs": [
+          "https://twitter.com/emojiface",
+          "https://facebook.com/emojiface",
+          "https://instagram.com/emojiface"
+        ]
+      },
+      "website": {
+        "name": "EmojiFace.US",
+        "url": "https://EmojiFace.US",
+        "description": "Mask face with AI-powered emoji generator including Labubu emoji",
+        "inLanguage": "en-US",
+        "copyrightYear": "2025",
+        "copyrightHolder": "EmojiFace.US"
+      }
+    },
+    "social_media": {
+      "og_image": "https://EmojiFace.US/public/images/emojified-photo2.webp",
+      "og_image_width": "1200",
+      "og_image_height": "630",
+      "twitter_card": "summary_large_image",
+      "twitter_site": "@emojiface",
+      "twitter_creator": "@emojiface"
+    },
+    "technical_seo": {
+      "canonical_domain": "https://EmojiFace.US",
+      "hreflang": {
+        "en": "https://EmojiFace.US/",
+        "en-US": "https://EmojiFace.US/"
+      },
+      "robots": {
+        "index": true,
+        "follow": true,
+        "max_image_preview": "large",
+        "max_snippet": -1,
+        "max_video_preview": -1
+      }
+    },
+    "performance": {
+      "critical_resources": [
+        "styles.css",
+        "seo-optimization.css"
+      ],
+      "preconnect_domains": [
+        "https://fonts.googleapis.com",
+        "https://fonts.gstatic.com",
+        "https://www.google-analytics.com",
+        "https://www.googletagmanager.com"
+      ],
+      "dns_prefetch": [
+        "//www.google-analytics.com",
+        "//www.googletagmanager.com",
+        "//pagead2.googlesyndication.com"
+      ]
+    },
+    "content_optimization": {
+      "target_keyword_density": {
+        "mask face": "2-3%",
+        "emoji face": "2-3%",
+        "face ai": "2-3%",
+        "labubu emoji": "1-2%"
+      },
+      "heading_structure": {
+        "h1": "Should contain primary keyword 'mask face' or 'emoji face'",
+        "h2": "Should contain secondary keywords like 'face ai', 'labubu emoji'",
+        "h3": "Should contain long-tail keywords and variations"
+      },
+      "internal_linking": {
+        "anchor_text_variations": [
+          "mask face with emoji",
+          "emoji face generator",
+          "face ai tool",
+          "labubu emoji creator",
+          "free emoji face maker"
+        ]
+      }
+    },
+    "local_seo": {
+      "business_type": "SoftwareApplication",
+      "service_area": "Worldwide",
+      "languages_supported": ["English"]
+    },
+    "analytics": {
+      "google_analytics_id": "GA_MEASUREMENT_ID",
+      "google_search_console": "your-google-verification-code-here",
+      "bing_webmaster": "your-bing-verification-code-here",
+      "yandex_webmaster": "your-yandex-verification-code-here"
+    },
+    "monitoring": {
+      "target_keywords_tracking": [
+        "mask face",
+        "emoji face generator",
+        "face ai",
+        "labubu emoji",
+        "emoji face maker",
+        "ai face mask",
+        "face to emoji",
+        "emoji face filter"
+      ],
+      "competitor_analysis": [
+        "face swap apps",
+        "emoji generators",
+        "ai photo editors",
+        "face filter tools"
+      ]
+    }
+  }
+}

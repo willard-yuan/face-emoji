@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://EmojiFace.US/</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo1.webp</image:loc>
+      <image:title>EmojiFace AI Demo - Face Masked with Emoji</image:title>
+      <image:caption>Example of face AI technology masking faces with emojis using EmojiFace generator</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo2.webp</image:loc>
+      <image:title>Mask Face with Labubu Emoji - AI Generated</image:title>
+      <image:caption>Transform your photos with AI-powered emoji face masks and Labubu emoji generator</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo3.png</image:loc>
+      <image:title>Face AI Emoji Generator Results</image:title>
+      <image:caption>Amazing results from our face AI emoji generator and Labubu emoji creator</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/demo1.webp</image:loc>
+      <image:title>EmojiFace Demo - Before and After</image:title>
+      <image:caption>See the amazing transformation with our emoji face generator and face AI technology</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/demo2.webp</image:loc>
+      <image:title>Labubu Emoji Face Transformation</image:title>
+      <image:caption>Mask face with cute Labubu emoji using our AI-powered face generator</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://EmojiFace.US/blog.html</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo2.webp</image:loc>
+      <image:title>EmojiFace Blog - Mask Face with AI Technology</image:title>
+      <image:caption>Learn about face AI technology and emoji face generation in our blog</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://EmojiFace.US/mask-face-labubu-emoji.html</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo2.webp</image:loc>
+      <image:title>Mask Face with Labubu Emoji Article</image:title>
+      <image:caption>Discover the science behind face-to-emoji transformation with Labubu emoji</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
+  
+  <url>
+    <loc>https://EmojiFace.US/how-to-mask-face-using-emojiface-dot-us.html</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo2.webp</image:loc>
+      <image:title>How to Mask Face Tutorial</image:title>
+      <image:caption>Step-by-step guide on how to mask face using EmojiFace.us with Labubu emoji</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
+  
+  <!-- Emoji Assets -->
+  <url>
+    <loc>https://EmojiFace.US/public/emojis/</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/emojis/labubu_emoji.png</image:loc>
+      <image:title>Labubu Emoji - Original</image:title>
+      <image:caption>Original Labubu emoji for face masking and AI transformation</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/emojis/labubu_emoji1.png</image:loc>
+      <image:title>Labubu Emoji Variation 1</image:title>
+      <image:caption>Labubu emoji variation for diverse face masking options</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/emojis/happy.png</image:loc>
+      <image:title>Happy Emoji for Face Masking</image:title>
+      <image:caption>Happy emoji option for AI-powered face transformation</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/emojis/sunglasses.png</image:loc>
+      <image:title>Cool Sunglasses Emoji</image:title>
+      <image:caption>Cool sunglasses emoji for stylish face masking with AI technology</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
+</urlset>

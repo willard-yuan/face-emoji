@@ -2,9 +2,33 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /private/
+Disallow: /temp/
+Disallow: /cache/
+Disallow: /*.json$
+Disallow: /*?*
+Allow: /public/
+Allow: /blog.html
+Allow: /mask-face-labubu-emoji.html
+Allow: /how-to-mask-face-using-emojiface-dot-us.html
 
 # Crawl-delay for better server performance
 Crawl-delay: 1
 
 # Sitemap location
 Sitemap: https://EmojiFace.US/sitemap.xml
+
+# Additional sitemaps
+Sitemap: https://EmojiFace.US/sitemap-images.xml
+
+# Specific rules for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Slurp
+Allow: /
+Crawl-delay: 2
