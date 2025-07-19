@@ -778,6 +778,12 @@
 
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="app.js"></script>
+    
+    <!-- Vercel Analytics -->
+    <script type="module">
+        import { inject } from '@vercel/analytics';
+        inject();
+    </script>
     <script>
         function toggleFaq(element) {
             // Toggle active class on the question
