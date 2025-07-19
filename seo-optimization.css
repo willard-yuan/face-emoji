@@ -60,12 +60,12 @@ button, .cta-button {
 }
 
 /* Accessibility improvements for SEO */
-a:focus,
+/* a:focus,
 button:focus,
 [tabindex]:focus {
     outline: 2px solid #6c47ff;
     outline-offset: 2px;
-}
+} */
 
 /* Skip link for accessibility */
 .skip-link {
