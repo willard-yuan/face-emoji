@@ -72,3 +72,15 @@ Redirect 301 /home.html /
         Header set Access-Control-Allow-Origin "*"
     </FilesMatch>
 </IfModule>
+
+# Ensure ads.txt is served with correct MIME type
+<Files "ads.txt">
+    ForceType text/plain
+    Header set Content-Type "text/plain; charset=utf-8"
+</Files>
+
+# Ensure app-ads.txt is served with correct MIME type
+<Files "app-ads.txt">
+    ForceType text/plain
+    Header set Content-Type "text/plain; charset=utf-8"
+</Files>

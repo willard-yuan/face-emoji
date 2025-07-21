@@ -1,1 +1,18 @@
+# ads.txt file for EmojiFace.US
+# This file is used by Google AdSense and other ad networks to verify authorized sellers
+# Format: <Field #1>, <Field #2>, <Field #3>, <Field #4>
+# Field #1: Domain name of the advertising system
+# Field #2: Publisher's Account ID
+# Field #3: Type of Account/Relationship
+# Field #4: Certification Authority ID
+
+# Google AdSense
 google.com, pub-4184498324686509, DIRECT, f08c47fec0942fa0
+
+# Google Ad Manager (if using)
+# google.com, pub-4184498324686509, DIRECT, f08c47fec0942fa0
+
+# Additional ad networks can be added here
+# Example:
+# adsystem.com, 12345, DIRECT
+# reseller.com, 67890, RESELLER, abc123

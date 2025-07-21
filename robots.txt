@@ -10,6 +10,8 @@ Allow: /public/
 Allow: /blog.html
 Allow: /mask-face-labubu-emoji.html
 Allow: /how-to-mask-face-using-emojiface-dot-us.html
+Allow: /ads.txt
+Allow: /app-ads.txt
 
 # Crawl-delay for better server performance
 Crawl-delay: 1
