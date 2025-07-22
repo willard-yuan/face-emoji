@@ -2304,7 +2304,8 @@ main {
         font-size: 0.8rem;
     }
     
-    /* 在移动端隐藏 How it works 和 FAQ 菜单 */
+    /* 在移动端隐藏 Features、How it works 和 FAQ 菜单 */
+    .nav-links a[href="#"],
     .nav-links a[href="#how-it-works"],
     .nav-links a[href="#faq"],
     .nav-links a[href="index.html#how-it-works"],
@@ -2504,7 +2505,8 @@ main {
         font-size: 0.75rem;
     }
     
-    /* 在移动端隐藏 How it works 和 FAQ 菜单 */
+    /* 在移动端隐藏 Features、How it works 和 FAQ 菜单 */
+    .nav-links a[href="#"],
     .nav-links a[href="#how-it-works"],
     .nav-links a[href="#faq"],
     .nav-links a[href="index.html#how-it-works"],
@@ -2588,7 +2590,8 @@ main {
         font-size: 0.7rem;
     }
     
-    /* 在移动端隐藏 How it works 和 FAQ 菜单 */
+    /* 在移动端隐藏 Features、How it works 和 FAQ 菜单 */
+    .nav-links a[href="#"],
     .nav-links a[href="#how-it-works"],
     .nav-links a[href="#faq"],
     .nav-links a[href="index.html#how-it-works"],
