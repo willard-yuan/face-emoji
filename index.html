@@ -40,19 +40,22 @@
     <!-- Preload critical resources for better performance -->
     <link rel="preload" href="styles.css" as="style">
     <link rel="preload" href="seo-optimization.css" as="style">
-    <link rel="preload" href="seo-monitor.js" as="script">
-    <link rel="preload" href="analytics-config.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js" as="script" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     
     <!-- DNS prefetch for external resources -->
     <link rel="dns-prefetch" href="//www.google-analytics.com">
     <link rel="dns-prefetch" href="//www.googletagmanager.com">
     <link rel="dns-prefetch" href="//search.google.com">
-    <script async src="https://pagead.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4184498324686509" 
+    <link rel="dns-prefetch" href="//pagead2.googlesyndication.com">
+    
+    <!-- Defer non-critical scripts -->
+    <script async defer src="https://pagead.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4184498324686509" 
          crossorigin="anonymous"></script>
     
-    <!-- Vercel Analytics -->
+    <!-- Vercel Analytics - Optimized loading -->
     <script>
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
@@ -436,14 +439,14 @@
                 
                 <div class="examples">
                     <div class="example">
-                        <img src="./public/images/demo2.webp" alt="Face AI emoji generator masking multiple faces in group photo with emojis">
+                        <img src="./public/images/demo2.webp" alt="Face AI emoji generator masking multiple faces in group photo with emojis" loading="eager" decoding="async">
                         <div class="example-caption">
                             <h3>Group Photo Face Masking</h3>
                             <p>Mask face in group photos using our advanced emoji face generator</p>
                         </div>
                     </div>
                     <div class="example">
-                        <img src="./public/images/demo1.webp" alt="Mask face with Labubu emoji - selfie transformed into emoji face art using face AI technology">
+                        <img src="./public/images/demo1.webp" alt="Mask face with Labubu emoji - selfie transformed into emoji face art using face AI technology" loading="eager" decoding="async">
                         <div class="example-caption">
                             <h3>Mask Face in Selfies</h3>
                             <p>Use face AI to mask faces in selfies with perfectly matching emoji expressions</p>
@@ -799,12 +802,27 @@
             </div>
         </footer>
 
+    <!-- Critical scripts loaded first -->
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
     <script src="app.js"></script>
     
-    <!-- SEO Monitoring and Analytics -->
-    <script src="seo-monitor.js"></script>
-    <script src="analytics-config.js"></script>
+    <!-- Non-critical scripts loaded after page load -->
+    <script>
+        // Load non-critical scripts after page load
+        window.addEventListener('load', function() {
+            // Load SEO monitoring script
+            const seoScript = document.createElement('script');
+            seoScript.src = 'seo-monitor.js';
+            seoScript.async = true;
+            document.head.appendChild(seoScript);
+            
+            // Load analytics script
+            const analyticsScript = document.createElement('script');
+            analyticsScript.src = 'analytics-config.js';
+            analyticsScript.async = true;
+            document.head.appendChild(analyticsScript);
+        });
+    </script>
     
     <!-- <script>
         window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };

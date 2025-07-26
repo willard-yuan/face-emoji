@@ -29,6 +29,8 @@ body {
     z-index: 1000;
     width: 100%;
     padding: 15px 0;
+    contain: layout style;
+    will-change: transform;
 }
 
 .header-container {
@@ -284,6 +286,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    will-change: transform, background-color;
 }
 
 .cta-button:hover {
@@ -946,6 +949,7 @@ main {
     background-color: #fff;
     padding: 30px 0;
     text-align: center;
+    contain: layout style;
 }
 
 .upload-container {
@@ -965,6 +969,7 @@ main {
     transition: all 0.3s ease;
     cursor: pointer;
     background-color: #fafafa;
+    will-change: border-color, background-color;
 }
 
 .upload-area:hover {

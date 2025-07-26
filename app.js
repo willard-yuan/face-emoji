@@ -56,16 +56,21 @@ async function loadModels() {
     try {
         console.log('Loading face-api.js models...');
 
-        await faceapi.nets.ssdMobilenetv1.loadFromUri('./public/models');
-        // await faceapi.nets.tinyFaceDetector.loadFromUri('./public/models');
-        // await faceapi.nets.mtcnn.loadFromUri('./public/models');
-        await faceapi.nets.faceExpressionNet.loadFromUri('./public/models');
+        // 并行加载模型以提高性能
+        const modelPromises = [
+            faceapi.nets.ssdMobilenetv1.loadFromUri('./public/models'),
+            faceapi.nets.faceExpressionNet.loadFromUri('./public/models')
+        ];
+        
+        await Promise.all(modelPromises);
         
         console.log('Models loaded successfully');
         isModelsLoaded = true;
     } catch (error) {
         console.error('Error loading models:', error);
-        alert('Failed to load AI models. Please refresh the page.');
+        // 更友好的错误处理，不阻塞用户体验
+        console.warn('AI models failed to load. Some features may be limited.');
+        isModelsLoaded = false;
     }
 }
 
