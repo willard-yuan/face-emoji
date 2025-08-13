@@ -116,4 +116,11 @@
       <image:license>https://EmojiFace.US</image:license>
     </image:image>
   </url>
+  <url>
+    <loc>https://EmojiFace.US/privacy-policy.html</loc>
+  </url>
+  
+  <url>
+    <loc>https://EmojiFace.US/terms-of-service.html</loc>
+  </url>
 </urlset>
