@@ -105,4 +105,15 @@
       <image:license>https://EmojiFace.US</image:license>
     </image:image>
   </url>
+  
+  <url>
+    <loc>https://EmojiFace.US/about-us.html</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo2.webp</image:loc>
+      <image:title>About EmojiFace.US - Our Story</image:title>
+      <image:caption>Learn about the team behind EmojiFace.US and our mission to transform face masking with AI and Labubu emoji</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
 </urlset>
