@@ -2281,6 +2281,16 @@ main {
         padding: 8px 0; /* 减少垂直padding */
     }
     
+    /* 移动端锚点定位优化 - 调整Features区域的滚动偏移 */
+    #features {
+        scroll-margin-top: 60px; /* 为移动端header高度预留空间 */
+    }
+    
+    /* 确保Features标题在移动端有适当的上边距 */
+    .transformations h2 {
+        padding-top: 20px;
+    }
+    
     .header-container {
         /* 保持水平布局，但在更小屏幕上调整 */
         flex-direction: row;
