@@ -457,6 +457,12 @@ function uploadNewImage() {
         fileInput.value = '';
     }
     
+    // 重新显示emoji选择器
+    const emojiSelection = document.querySelector('.emoji-selection');
+    if (emojiSelection) {
+        emojiSelection.style.display = 'block';
+    }
+    
     // 滚动到上传区域
     const uploadSection = document.querySelector('.upload-section');
     if (uploadSection) {
@@ -525,6 +531,11 @@ async function applyEmojiToFace() {
             setTimeout(() => {
                 showLoading(false);
                 document.getElementById('actionButtons').style.display = 'flex';
+                // 隐藏emoji选择器
+                const emojiSelection = document.querySelector('.emoji-selection');
+                if (emojiSelection) {
+                    emojiSelection.style.display = 'none';
+                }
             }, remainingTime);
 
         } catch (error) {
