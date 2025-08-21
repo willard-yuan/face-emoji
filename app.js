@@ -169,6 +169,17 @@ async function processImage(file) {
     }
     
     try {
+        // 追踪用户上传图片事件
+        if (typeof window.va === 'function') {
+            window.va('event', { 
+                name: 'Image Upload',
+                data: { 
+                    fileSize: Math.round(file.size / 1024), // KB
+                    fileType: file.type 
+                }
+            });
+        }
+        
         // 创建图片元素
         const img = await createImageFromFile(file);
         originalImage = img;
@@ -500,6 +511,16 @@ async function applyEmojiToFace() {
         return;
     }
 
+    // 追踪用户点击添加emoji按钮事件
+    if (typeof window.va === 'function') {
+        window.va('event', { 
+            name: 'Add Emoji Click',
+            data: { 
+                emojiStyle: selectedEmojiStyle 
+            }
+        });
+    }
+
     showLoading(true);
 
     // 使用setTimeout延迟耗时操作，确保UI先更新
@@ -644,6 +665,17 @@ function downloadImage() {
     if (!processedCanvas) {
         alert('No processed image to download.');
         return;
+    }
+    
+    // 追踪用户点击下载按钮事件
+    if (typeof window.va === 'function') {
+        window.va('event', { 
+            name: 'Download Photo',
+            data: { 
+                emojiStyle: selectedEmojiStyle,
+                facesDetected: detectedFaces ? detectedFaces.length : 0
+            }
+        });
     }
     
     // 创建下载链接
