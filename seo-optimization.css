@@ -60,19 +60,19 @@ button, .cta-button {
 }
 
 /* Accessibility improvements for SEO */
-/* a:focus,
+a:focus,
 button:focus,
 [tabindex]:focus {
     outline: 2px solid #6c47ff;
     outline-offset: 2px;
-} */
+}
 
 /* Skip link for accessibility */
 .skip-link {
     position: absolute;
     top: -40px;
     left: 6px;
-    background: #000;
+    /**background: #000;**/
     color: #fff;
     padding: 8px;
     text-decoration: none;

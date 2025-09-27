@@ -84,6 +84,12 @@ function setupEventListeners() {
 
     // 拖拽上传
     uploadArea.addEventListener('click', () => fileInput.click());
+    uploadArea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            fileInput.click();
+        }
+    });
     uploadArea.addEventListener('dragover', handleDragOver);
     uploadArea.addEventListener('dragleave', handleDragLeave);
     uploadArea.addEventListener('drop', handleDrop);
@@ -485,18 +491,59 @@ function uploadNewImage() {
 function setupEmojiSelection() {
     const emojiOptions = document.querySelectorAll('.emoji-option');
     
-    emojiOptions.forEach(option => {
+    emojiOptions.forEach((option, index) => {
         option.addEventListener('click', () => {
-            // 移除所有active类
-            emojiOptions.forEach(opt => opt.classList.remove('active'));
-            
-            // 为当前选项添加active类
-            option.classList.add('active');
-            
-            // 更新选中的emoji样式
-            selectedEmojiStyle = option.getAttribute('data-style');
+            selectEmojiOption(option, emojiOptions);
+        });
+        
+        option.addEventListener('keydown', (e) => {
+            handleEmojiKeyNavigation(e, option, emojiOptions, index);
         });
     });
+}
+
+function selectEmojiOption(selectedOption, allOptions) {
+    // 移除所有active类和更新ARIA属性
+    allOptions.forEach(opt => {
+        opt.classList.remove('active');
+        opt.setAttribute('aria-checked', 'false');
+        opt.setAttribute('tabindex', '-1');
+    });
+    
+    // 添加active类到当前选项并更新ARIA属性
+    selectedOption.classList.add('active');
+    selectedOption.setAttribute('aria-checked', 'true');
+    selectedOption.setAttribute('tabindex', '0');
+    
+    // 更新选中的emoji样式
+    selectedEmojiStyle = selectedOption.getAttribute('data-style');
+}
+
+function handleEmojiKeyNavigation(e, currentOption, allOptions, currentIndex) {
+    let newIndex = currentIndex;
+    
+    switch(e.key) {
+        case 'ArrowDown':
+        case 'ArrowRight':
+            e.preventDefault();
+            newIndex = (currentIndex + 1) % allOptions.length;
+            break;
+        case 'ArrowUp':
+        case 'ArrowLeft':
+            e.preventDefault();
+            newIndex = (currentIndex - 1 + allOptions.length) % allOptions.length;
+            break;
+        case 'Enter':
+        case ' ':
+            e.preventDefault();
+            selectEmojiOption(currentOption, allOptions);
+            return;
+        default:
+            return;
+    }
+    
+    // 移动焦点到新选项
+    allOptions[newIndex].focus();
 }
 
 // 应用emoji到人脸
@@ -816,6 +863,50 @@ function handleCanvasClick(event) {
 
 // 处理键盘按下事件
 function handleKeyDown(event) {
+    // ESC键关闭图片预览
+    if (event.key === 'Escape') {
+        const imagePreviewSection = document.getElementById('imagePreviewSection');
+        if (imagePreviewSection && imagePreviewSection.style.display !== 'none') {
+            closeImagePreview();
+        }
+    }
+    
+    // Canvas键盘导航
+    if (event.target.id === 'canvas') {
+        const canvas = document.getElementById('canvas');
+        const tooltip = document.getElementById('tooltip');
+        
+        switch(event.key) {
+            case 'Enter':
+                event.preventDefault();
+                applyEmojiToFace();
+                break;
+            case 'Tab':
+                // 让Tab键正常工作，不阻止默认行为
+                break;
+            case 'ArrowUp':
+            case 'ArrowDown':
+            case 'ArrowLeft':
+            case 'ArrowRight':
+                event.preventDefault();
+                // 提供键盘导航反馈
+                if (tooltip) {
+                    tooltip.textContent = 'Use Enter to apply emoji to faces, Escape to close';
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = '50%';
+                    tooltip.style.top = '10px';
+                    tooltip.style.transform = 'translateX(-50%)';
+                    
+                    // 3秒后隐藏提示
+                    setTimeout(() => {
+                        tooltip.style.display = 'none';
+                    }, 3000);
+                }
+                break;
+        }
+    }
+    
+    // 删除选中的emoji
     if (!selectedEmoji) return;
 
     if (event.key === 'Delete' || event.key === 'Backspace') {

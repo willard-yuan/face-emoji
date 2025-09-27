@@ -332,20 +332,20 @@
 </head>
 <body itemscope itemtype="https://schema.org/WebPage">
     <!-- Skip to main content for accessibility -->
-    <!--<a href="#main-content" class="skip-link">Skip to main content</a> -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header class="header" role="banner">
         <div class="container header-container">
             <div class="logo">
                 <div itemprop="name"><a href="index.html" style="text-decoration: none; color: inherit;">EmojiFace.US</a></div>
             </div>
             <div class="nav-wrapper">
-                <nav class="nav-links" role="navigation" itemscope itemtype="https://schema.org/SiteNavigationElement">
-                    <a href="#features" itemprop="url">Features</a>
-                    <a href="#how-it-works" itemprop="url">How It Works</a>
-                    <a href="#faq" itemprop="url">FAQ</a>
-                    <a href="blog.html" itemprop="url">Blog</a>
+                <nav class="nav-links" role="navigation" itemscope itemtype="https://schema.org/SiteNavigationElement" aria-label="Main navigation">
+                    <a href="#features" itemprop="url" aria-label="Go to Features section">Features</a>
+                    <a href="#how-it-works" itemprop="url" aria-label="Go to How It Works section">How It Works</a>
+                    <a href="#faq" itemprop="url" aria-label="Go to FAQ section">FAQ</a>
+                    <a href="blog.html" itemprop="url" aria-label="Go to Blog page">Blog</a>
                 </nav>
-                <button class="cta-button" role="button">Get Started</button>
+                <button class="cta-button" role="button" aria-label="Get started with emoji face masking">Get Started</button>
             </div>
         </div>
     </header>
@@ -373,15 +373,15 @@
         <section class="upload-section" itemscope itemtype="https://schema.org/WebPageElement">
             <div class="container">
                 <div class="upload-container">
-                    <div class="upload-area" id="uploadArea" role="button" tabindex="0" aria-label="Upload photo area">
-                        <div class="upload-icon">
+                    <div class="upload-area" id="uploadArea" role="button" tabindex="0" aria-label="Upload photo area. Click to select a file or drag and drop your photo here. Supported formats: jpeg, jpg, png, webp" aria-describedby="upload-instructions">
+                        <div class="upload-icon" aria-hidden="true">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-upload h-12 w-12 text-pink-400 mb-4"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" x2="12" y1="3" y2="15"></line></svg>
                         </div>
-                        <div class="upload-text">Drag and drop your photo here - jpeg, jpg, png, webp format</div>
+                        <div class="upload-text" id="upload-instructions">Drag and drop your photo here - jpeg, jpg, png, webp format</div>
                         <div class="upload-subtext">or click to select a file</div>
                     </div>
-                    <input type="file" id="fileInput" accept="image/*">
-                    <button class="btn try-now-btn" onclick="document.getElementById('fileInput').click()">Select Photo</button>
+                    <input type="file" id="fileInput" accept="image/*" aria-label="Select photo file to upload">
+                    <button class="btn try-now-btn" onclick="document.getElementById('fileInput').click()" aria-describedby="upload-instructions">Select Photo</button>
                 </div>
                 
                 <div class="loading" id="loading">
@@ -416,78 +416,78 @@
                     
                     <div class="uploaded-image-container">
                         <img id="uploadedImage" src="" alt="Uploaded photo" />
-                        <canvas id="canvas" style="display: none;" tabindex="0"></canvas>
-                        <div id="tooltip" class="tooltip" style="display: none;"></div>
-                        <button class="close-btn" id="closeImageBtn" onclick="closeImagePreview()">&times;</button>
+                        <canvas id="canvas" style="display: none;" tabindex="0" role="img" aria-label="Photo with emoji faces applied. Use arrow keys to navigate between faces, Enter to select, and Escape to close."></canvas>
+                        <div id="tooltip" class="tooltip" style="display: none;" role="tooltip" aria-live="polite"></div>
+                        <button class="close-btn" id="closeImageBtn" onclick="closeImagePreview()" aria-label="Close image preview">&times;</button>
                         
                         <!-- Action buttons container -->
                         <div class="action-buttons" id="actionButtons" style="display: none;">
-                            <button class="btn" id="downloadBtn" onclick="downloadImage()">Download Emoji Photo</button>
-                            <button class="btn upload-new-btn" id="uploadNewBtn" onclick="uploadNewImage()">Upload New Image</button>
+                            <button class="btn" id="downloadBtn" onclick="downloadImage()" aria-label="Download the photo with emoji faces applied">Download Emoji Photo</button>
+                            <button class="btn upload-new-btn" id="uploadNewBtn" onclick="uploadNewImage()" aria-label="Upload a new image to process">Upload New Image</button>
                         </div>
                     </div>
                     
                     <!-- Emoji Style Selection -->
-                    <div class="emoji-selection">
-                        <div class="emoji-selection-header">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg>
+                    <div class="emoji-selection" role="region" aria-labelledby="emoji-selection-header">
+                        <div class="emoji-selection-header" id="emoji-selection-header">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg>
                             <span>Choose Emoji Style</span>
                         </div>
                         
-                        <div class="emoji-options">
+                        <div class="emoji-options" role="radiogroup" aria-labelledby="emoji-selection-header">
 
-                            <div class="emoji-option active" data-style="random_labubu">
-                                <div class="emoji-icon">
-                                    <img src="./public/emojis/labubu_emoji4.png" alt="Labubu emoji" style="width: 24px; height: 24px; border-radius: 4px;">
+                            <div class="emoji-option active" data-style="random_labubu" role="radio" aria-checked="true" tabindex="0" aria-describedby="auto-labubu-desc">
+                                <div class="emoji-icon" aria-hidden="true">
+                                    <img src="./public/emojis/labubu_emoji4.png" alt="" style="width: 24px; height: 24px; border-radius: 4px;">
                                 </div>
 
                                 <div class="emoji-label">
                                     <strong>Auto Labubu</strong>
-                                    <span>Auto select from Labubu collection</span>
+                                    <span id="auto-labubu-desc">Auto select from Labubu collection</span>
                                 </div>
                             </div>
 
-                            <div class="emoji-option" data-style="auto">
-                                <div class="emoji-icon">🤖</div>
+                            <div class="emoji-option" data-style="auto" role="radio" aria-checked="false" tabindex="-1" aria-describedby="auto-emoji-desc">
+                                <div class="emoji-icon" aria-hidden="true">🤖</div>
                                 <div class="emoji-label">
                                     <strong>Auto Emoji</strong>
-                                    <span>Let AI choose the best emoji</span>
+                                    <span id="auto-emoji-desc">Let AI choose the best emoji</span>
                                 </div>
                             </div>
 
-                            <div class="emoji-option" data-style="labubu">
-                                <div class="emoji-icon">
-                                    <img src="./public/emojis/labubu_emoji2.png" alt="Labubu emoji" style="width: 24px; height: 24px; border-radius: 4px;">
+                            <div class="emoji-option" data-style="labubu" role="radio" aria-checked="false" tabindex="-1" aria-describedby="happy-labubu-desc">
+                                <div class="emoji-icon" aria-hidden="true">
+                                    <img src="./public/emojis/labubu_emoji2.png" alt="" style="width: 24px; height: 24px; border-radius: 4px;">
                                 </div>
                                 <div class="emoji-label">
                                     <strong>Happy Labubu</strong>
-                                    <span>Use Happy Labubu emoji</span>
+                                    <span id="happy-labubu-desc">Use Happy Labubu emoji</span>
                                 </div>
                             </div>
                             
 
                             
-                            <div class="emoji-option" data-style="happy">
-                                <div class="emoji-icon">😊</div>
+                            <div class="emoji-option" data-style="happy" role="radio" aria-checked="false" tabindex="-1" aria-describedby="happy-emoji-desc">
+                                <div class="emoji-icon" aria-hidden="true">😊</div>
                                 <div class="emoji-label">
                                     <strong>Happy Emoji</strong>
-                                    <span>Always use happy faces</span>
+                                    <span id="happy-emoji-desc">Always use happy faces</span>
                                 </div>
                             </div>
                             
-                            <div class="emoji-option" data-style="funny">
-                                <div class="emoji-icon">😜</div>
+                            <div class="emoji-option" data-style="funny" role="radio" aria-checked="false" tabindex="-1" aria-describedby="funny-emoji-desc">
+                                <div class="emoji-icon" aria-hidden="true">😜</div>
                                 <div class="emoji-label">
                                     <strong>Funny Emoji</strong>
-                                    <span>Use funny and silly emojis</span>
+                                    <span id="funny-emoji-desc">Use funny and silly emojis</span>
                                 </div>
                             </div>
                             
-                            <div class="emoji-option" data-style="cool">
-                                <div class="emoji-icon">😎</div>
+                            <div class="emoji-option" data-style="cool" role="radio" aria-checked="false" tabindex="-1" aria-describedby="cool-emoji-desc">
+                                <div class="emoji-icon" aria-hidden="true">😎</div>
                                 <div class="emoji-label">
                                     <strong>Cool Emoji</strong>
-                                    <span>Use cool and stylish emojis</span>
+                                    <span id="cool-emoji-desc">Use cool and stylish emojis</span>
                                 </div>
                             </div>
                             
@@ -495,7 +495,7 @@
 
                         </div>
                         
-                        <button class="btn emoji-apply-btn" id="emojiApplyBtn" onclick="applyEmojiToFace()">Click to add Emoji to Face</button>
+                        <button class="btn emoji-apply-btn" id="emojiApplyBtn" onclick="applyEmojiToFace()" aria-label="Apply selected emoji style to detected faces in the uploaded photo">Click to add Emoji to Face</button>
                     </div>
                 </div>
             </div>
