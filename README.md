@@ -1,6 +1,6 @@
 # Mask Face with Labubu Emoji | Best Emojis to Cover Your Face
 
-Visit [https://emojiface.us](https://emojiface.us/)
+Visit <a href="https://emojiface.us/" rel="dofollow"><strong>emojiface.us</strong></a>
 
 🎭 **Mask face with emojis and Labubu emoji instantly for privacy protection and fun social media content. Create amazing emoji face art and Labubu face for free!**
 
@@ -20,7 +20,7 @@ EmojiFace.US is the world's most advanced **face AI emoji generator** that speci
 ## 🚀 How to Mask Face with Labubu Emoji
 
 ### Step 1: Upload Your Photo
-- Visit [https://emojiface.us/](https://emojiface.us/)
+- Visit <a href="https://emojiface.us/" rel="dofollow"><strong>emojiface.us</strong></a>, Best Emojis to Cover Your Face.</p>
 - Drag and drop your photo or click to select
 - Supports JPEG, PNG, WebP formats up to 10MB
 
