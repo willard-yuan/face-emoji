@@ -38,6 +38,26 @@
       <image:geo_location>Worldwide</image:geo_location>
       <image:license>https://EmojiFace.US</image:license>
     </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojiface_add_emoji_on_face_demo_1.webp</image:loc>
+      <image:title>Sample Image 1 - Person with Emoji Face</image:title>
+      <image:caption>A person's face covered with an emoji using the EmojiFace tool.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojiface_add_emoji_on_face_demo_2.webp</image:loc>
+      <image:title>Sample Image 2 - Person with Emoji Face</image:title>
+      <image:caption>A person's face covered with an emoji using the EmojiFace tool.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojiface_add_emoji_on_face_demo_3.webp</image:loc>
+      <image:title>Sample Image 3 - Person with Emoji Face</image:title>
+      <image:caption>A person's face covered with an emoji using the EmojiFace tool.</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojiface_add_emoji_on_face_demo_4.webp</image:loc>
+      <image:title>Sample Image 4 - Person with Emoji Face</image:title>
+      <image:caption>A person's face covered with an emoji using the EmojiFace tool.</image:caption>
+    </image:image>
   </url>
   
   <url>

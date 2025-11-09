@@ -487,6 +487,43 @@ function uploadNewImage() {
     }
 }
 
+// 加载示例图片
+async function loadSampleImage(imagePath) {
+    try {
+        // 追踪用户点击示例图片事件
+        if (typeof window.va === 'function') {
+            window.va('event', { 
+                name: 'Sample Image Selected',
+                data: { 
+                    imagePath: imagePath
+                }
+            });
+        }
+        
+        // 创建图片元素
+        const img = new Image();
+        img.onload = function() {
+            originalImage = img;
+            
+            // 隐藏upload-container
+            hideUploadContainer();
+            
+            // 显示图片预览
+            showImagePreview(img);
+            document.querySelector('.emoji-selection').style.display = 'block';
+        };
+        img.onerror = function() {
+            console.error('Error loading sample image:', imagePath);
+            alert('Error loading sample image. Please try again.');
+        };
+        img.src = imagePath;
+        
+    } catch (error) {
+        console.error('Error loading sample image:', error);
+        alert('Error loading sample image. Please try again.');
+    }
+}
+
 // 设置emoji选择器
 function setupEmojiSelection() {
     const emojiOptions = document.querySelectorAll('.emoji-option');

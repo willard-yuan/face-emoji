@@ -391,7 +391,26 @@
                         <div class="upload-subtext">or click to select a file</div>
                     </div>
                     <input type="file" id="fileInput" accept="image/*" aria-label="Select photo file to upload">
-                    <button class="btn try-now-btn" onclick="document.getElementById('fileInput').click()" aria-describedby="upload-instructions">Select Photo</button>
+                    
+                    
+                    <!-- Sample Images Section -->
+                    <div class="sample-images-section">
+                        <p class="sample-images-text">No image? Try one of these</p>
+                        <div class="sample-images-grid">
+                            <div class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_1.webp')">
+                                <img src="/public/images/emojiface_add_emoji_on_face_demo_1.webp" alt="Sample image 1 - person with emoji face" loading="lazy">
+                            </div>
+                            <div class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_2.webp')">
+                                <img src="/public/images/emojiface_add_emoji_on_face_demo_2.webp" alt="Sample image 2 - person with emoji face" loading="lazy">
+                            </div>
+                            <div class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_3.webp')">
+                                <img src="/public/images/emojiface_add_emoji_on_face_demo_3.webp" alt="Sample image 3 - person with emoji face" loading="lazy">
+                            </div>
+                            <div class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_4.webp')">
+                                <img src="/public/images/emojiface_add_emoji_on_face_demo_4.webp" alt="Sample image 4 - person with emoji face" loading="lazy">
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="loading" id="loading">
