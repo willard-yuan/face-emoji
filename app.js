@@ -8,6 +8,19 @@ let drawnEmojis = [];
 let selectedEmoji = null;
 let progressInterval = null;
 let currentProgress = 0;
+let isDragging = false;
+let isResizing = false;
+let isRotating = false;
+let resizeMode = null;
+let dragStartX, dragStartY;
+
+// 控件显示策略配置与状态
+// 配置：是否在首次添加后为所有emoji显示编辑控件
+const showControlsInitially = true;
+// 配置：在首次展示阶段，未选中的控件使用更淡样式
+const dimUnselectedInitialControls = false;
+// 运行时状态：当前是否处于“首次添加后的初始展示阶段”
+let controlsInitialActive = false;
 
 // 表情映射
 const expressionMap = {
@@ -43,7 +56,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('canvas');
     if (canvas) {
         canvas.addEventListener('click', handleCanvasClick);
+        canvas.addEventListener('mousedown', handleCanvasMouseDown);
         canvas.addEventListener('mousemove', handleCanvasMouseMove);
+        canvas.addEventListener('mouseup', handleCanvasMouseUp);
         canvas.addEventListener('mouseleave', handleCanvasMouseLeave);
     }
 
@@ -295,6 +310,8 @@ async function drawEmojiOnFaces(img, detections) {
         await drawEmojiForDetection(ctx, detection);
     }
 
+    // 首次添加后进入初始展示阶段（根据配置）
+    controlsInitialActive = !!showControlsInitially;
     redrawCanvas();
     showTooltip();
 }
@@ -337,20 +354,25 @@ function drawEmojiForDetection(ctx, detection) {
             // 计算表情符号的位置和大小
             let emojiSize, x, y;
             
-            if (emojiName.includes('labubu_emoji')) {
-                // 对于所有labubu emoji，使用较小的尺寸以避免耳朵覆盖人脸外区域
-                emojiSize = Math.max(box.width, box.height) * 0.98;
-                x = box.x + (box.width - emojiSize) / 2;
-                y = box.y - emojiImg.height / 2.8;
-                drawnEmojis.push({ img: emojiImg, x, y, width: emojiSize, height: emojiSize + emojiImg.height / 2.8 });
-            } else {
-                // 其他emoji使用原来的尺寸
-                emojiSize = Math.max(box.width, box.height) * 0.95;
-                x = box.x + (box.width - emojiSize) / 2;
-                y = box.y + (box.height - emojiSize) / 2;
-                // 存储emoji信息
-                drawnEmojis.push({ img: emojiImg, x, y, width: emojiSize, height: emojiSize });
-            }
+            // 调整emoji大小，使其与人脸框宽度成比例
+            emojiSize = box.width * 1.5; 
+            
+            // 将emoji定位在人脸框的中心
+            x = box.x - (emojiSize - box.width) / 2;
+            y = box.y - (emojiSize - box.height) / 2 - box.height * 0.1; // 向上微调
+
+            const aspectRatio = emojiImg.naturalWidth / emojiImg.naturalHeight;
+            const emojiHeight = emojiSize / aspectRatio;
+
+            drawnEmojis.push({
+                img: emojiImg,
+                x: x,
+                y: y,
+                width: emojiSize,
+                height: emojiHeight, // 使用计算出的高度
+                angle: 0 // 新增：初始角度
+            });
+            
             resolve();
         };
         
@@ -746,7 +768,7 @@ function stopProgressAnimation() {
 
 // 下载处理后的图片
 function downloadImage() {
-    if (!processedCanvas) {
+    if (!processedCanvas || !originalImage) {
         alert('No processed image to download.');
         return;
     }
@@ -762,10 +784,26 @@ function downloadImage() {
         });
     }
     
-    // 创建下载链接
+    // 使用离屏画布导出，避免包含编辑控件
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = processedCanvas.width;
+    exportCanvas.height = processedCanvas.height;
+    const exportCtx = exportCanvas.getContext('2d');
+    // 绘制原始图片
+    exportCtx.drawImage(originalImage, 0, 0);
+    // 绘制所有emoji（不绘制任何控件）
+    drawnEmojis.forEach(emoji => {
+        exportCtx.save();
+        exportCtx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
+        exportCtx.rotate(emoji.angle);
+        exportCtx.drawImage(emoji.img, -emoji.width / 2, -emoji.height / 2, emoji.width, emoji.height);
+        exportCtx.restore();
+    });
+
+    // 创建下载链接（基于离屏画布）
     const link = document.createElement('a');
     link.download = 'emojified-photo.png';
-    link.href = processedCanvas.toDataURL('image/png');
+    link.href = exportCanvas.toDataURL('image/png');
     
     // 触发下载
     document.body.appendChild(link);
@@ -828,16 +866,137 @@ function redrawCanvas() {
     ctx.clearRect(0, 0, processedCanvas.width, processedCanvas.height);
     ctx.drawImage(originalImage, 0, 0);
 
-    // 绘制所有emojis
+    // 先绘制所有emoji图片
     drawnEmojis.forEach(emoji => {
-        ctx.drawImage(emoji.img, emoji.x, emoji.y, emoji.width, emoji.height);
+        ctx.save();
+        ctx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
+        ctx.rotate(emoji.angle);
+        ctx.drawImage(emoji.img, -emoji.width / 2, -emoji.height / 2, emoji.width, emoji.height);
+        ctx.restore();
     });
 
-    // 如果有选中的emoji，绘制高亮边框
-    if (selectedEmoji) {
-        ctx.strokeStyle = '#6c47ff'; // 亮紫色
-        ctx.lineWidth = 4;
-        ctx.strokeRect(selectedEmoji.x, selectedEmoji.y, selectedEmoji.width, selectedEmoji.height);
+    // 控件绘制
+    const handleSize = 14;
+    const halfHandleSize = handleSize / 2;
+    const deleteOffset = 16; // 删除手柄相对边框的偏移距离（适中，避免过近）
+    const rotateHandleSize = 16; // 旋转手柄菱形边长（稍微增大）
+    const rotateHalfSize = rotateHandleSize / 2;
+    const rotateOffset = 26; // 旋转手柄距离顶部边框的偏移（稍微靠远）
+
+    if (controlsInitialActive && showControlsInitially) {
+        // 初始展示阶段：为所有emoji绘制控件
+        drawnEmojis.forEach(emoji => {
+            ctx.save();
+            ctx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
+            ctx.rotate(emoji.angle);
+
+            // 边框样式：选中更亮，未选中更淡（可配置）
+            const isSelected = selectedEmoji === emoji;
+            ctx.globalAlpha = (!isSelected && dimUnselectedInitialControls) ? 0.5 : 1.0;
+            ctx.strokeStyle = isSelected ? '#6c47ff' : '#333';
+            ctx.lineWidth = isSelected ? 2 : 1;
+            ctx.strokeRect(-emoji.width / 2, -emoji.height / 2, emoji.width, emoji.height);
+
+            // 手柄颜色（受透明度影响）
+            ctx.fillStyle = '#ff0000';
+
+            // 角手柄
+            ctx.fillRect(-emoji.width / 2 - halfHandleSize, -emoji.height / 2 - halfHandleSize, handleSize, handleSize);
+            ctx.fillRect(emoji.width / 2 - halfHandleSize, -emoji.height / 2 - halfHandleSize, handleSize, handleSize);
+            ctx.fillRect(-emoji.width / 2 - halfHandleSize, emoji.height / 2 - halfHandleSize, handleSize, handleSize);
+            ctx.fillRect(emoji.width / 2 - halfHandleSize, emoji.height / 2 - halfHandleSize, handleSize, handleSize);
+
+            // 边手柄
+            ctx.fillRect(-halfHandleSize, -emoji.height / 2 - halfHandleSize, handleSize, handleSize);
+            ctx.fillRect(-emoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
+            ctx.fillRect(emoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
+            ctx.fillRect(-halfHandleSize, emoji.height / 2 - halfHandleSize, handleSize, handleSize);
+
+            // 旋转手柄（菱形），使用独立尺寸与偏移
+            {
+                const ry = -emoji.height / 2 - rotateOffset;
+                ctx.beginPath();
+                ctx.moveTo(0, ry - rotateHalfSize);
+                ctx.lineTo(rotateHalfSize, ry);
+                ctx.lineTo(0, ry + rotateHalfSize);
+                ctx.lineTo(-rotateHalfSize, ry);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // 删除手柄（右上外侧，深色方块+白色X图标）
+            const delX = emoji.width / 2 + deleteOffset - halfHandleSize;
+            const delY = -emoji.height / 2 - deleteOffset - halfHandleSize;
+            ctx.fillStyle = '#222';
+            ctx.fillRect(delX, delY, handleSize, handleSize);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            // 画白色X（两条斜线）
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(delX + 4, delY + 4);
+            ctx.lineTo(delX + handleSize - 4, delY + handleSize - 4);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(delX + handleSize - 4, delY + 4);
+            ctx.lineTo(delX + 4, delY + handleSize - 4);
+            ctx.stroke();
+
+            ctx.restore();
+            ctx.globalAlpha = 1.0;
+        });
+    } else if (selectedEmoji) {
+        // 常规阶段：仅为选中emoji绘制控件
+        ctx.save();
+        ctx.translate(selectedEmoji.x + selectedEmoji.width / 2, selectedEmoji.y + selectedEmoji.height / 2);
+        ctx.rotate(selectedEmoji.angle);
+
+        ctx.strokeStyle = '#6c47ff';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-selectedEmoji.width / 2, -selectedEmoji.height / 2, selectedEmoji.width, selectedEmoji.height);
+
+        ctx.fillStyle = '#ff0000';
+        // 角手柄
+        ctx.fillRect(-selectedEmoji.width / 2 - halfHandleSize, -selectedEmoji.height / 2 - halfHandleSize, handleSize, handleSize);
+        ctx.fillRect(selectedEmoji.width / 2 - halfHandleSize, -selectedEmoji.height / 2 - halfHandleSize, handleSize, handleSize);
+        ctx.fillRect(-selectedEmoji.width / 2 - halfHandleSize, selectedEmoji.height / 2 - halfHandleSize, handleSize, handleSize);
+        ctx.fillRect(selectedEmoji.width / 2 - halfHandleSize, selectedEmoji.height / 2 - halfHandleSize, handleSize, handleSize);
+        // 边手柄
+        ctx.fillRect(-halfHandleSize, -selectedEmoji.height / 2 - halfHandleSize, handleSize, handleSize);
+        ctx.fillRect(-selectedEmoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
+        ctx.fillRect(selectedEmoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
+        ctx.fillRect(-halfHandleSize, selectedEmoji.height / 2 - halfHandleSize, handleSize, handleSize);
+        // 旋转手柄（菱形），使用独立尺寸与偏移
+        {
+            const ry = -selectedEmoji.height / 2 - rotateOffset;
+            ctx.beginPath();
+            ctx.moveTo(0, ry - rotateHalfSize);
+            ctx.lineTo(rotateHalfSize, ry);
+            ctx.lineTo(0, ry + rotateHalfSize);
+            ctx.lineTo(-rotateHalfSize, ry);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // 删除手柄（右上外侧，深色方块+白色X图标）
+        const delX = selectedEmoji.width / 2 + deleteOffset - halfHandleSize;
+        const delY = -selectedEmoji.height / 2 - deleteOffset - halfHandleSize;
+        ctx.fillStyle = '#222';
+        ctx.fillRect(delX, delY, handleSize, handleSize);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        // 画白色X（两条斜线）
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(delX + 4, delY + 4);
+        ctx.lineTo(delX + handleSize - 4, delY + handleSize - 4);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(delX + handleSize - 4, delY + 4);
+        ctx.lineTo(delX + 4, delY + handleSize - 4);
+        ctx.stroke();
+
+        ctx.restore();
     }
 }
 
@@ -852,32 +1011,206 @@ function handleCanvasMouseMove(event) {
     const x = (event.clientX - rect.left) * scaleX;
     const y = (event.clientY - rect.top) * scaleY;
 
-    // 查找鼠标悬停的emoji
-    let hoveredEmoji = null;
+    if (isDragging && selectedEmoji) {
+        const dx = x - dragStartX;
+        const dy = y - dragStartY;
+        selectedEmoji.x += dx;
+        selectedEmoji.y += dy;
+        dragStartX = x;
+        dragStartY = y;
+        redrawCanvas();
+        return;
+    } else if (isResizing && selectedEmoji) {
+        const dx = x - dragStartX;
+        const dy = y - dragStartY;
+        const minSize = 10;
+
+        switch (resizeMode) {
+            case 'bottomRight':
+                selectedEmoji.width += dx;
+                selectedEmoji.height += dy;
+                break;
+            case 'bottomLeft': {
+                // 右边保持不动，左边移动
+                let newWidth = selectedEmoji.width - dx;
+                if (newWidth < minSize) {
+                    const allowedDx = selectedEmoji.width - minSize;
+                    selectedEmoji.x += allowedDx;
+                    selectedEmoji.width = minSize;
+                } else {
+                    selectedEmoji.x += dx;
+                    selectedEmoji.width = newWidth;
+                }
+                selectedEmoji.height += dy;
+                break;
+            }
+            case 'topRight': {
+                // 下边保持不动，上边移动
+                let newHeight = selectedEmoji.height - dy;
+                if (newHeight < minSize) {
+                    const allowedDy = selectedEmoji.height - minSize;
+                    selectedEmoji.y += allowedDy;
+                    selectedEmoji.height = minSize;
+                } else {
+                    selectedEmoji.y += dy;
+                    selectedEmoji.height = newHeight;
+                }
+                selectedEmoji.width += dx;
+                break;
+            }
+            case 'topLeft': {
+                let newWidth = selectedEmoji.width - dx;
+                let newHeight = selectedEmoji.height - dy;
+                if (newWidth < minSize) {
+                    const allowedDx = selectedEmoji.width - minSize;
+                    selectedEmoji.x += allowedDx;
+                    selectedEmoji.width = minSize;
+                } else {
+                    selectedEmoji.x += dx;
+                    selectedEmoji.width = newWidth;
+                }
+                if (newHeight < minSize) {
+                    const allowedDy = selectedEmoji.height - minSize;
+                    selectedEmoji.y += allowedDy;
+                    selectedEmoji.height = minSize;
+                } else {
+                    selectedEmoji.y += dy;
+                    selectedEmoji.height = newHeight;
+                }
+                break;
+            }
+            case 'left': {
+                let newWidth = selectedEmoji.width - dx;
+                if (newWidth < minSize) {
+                    const allowedDx = selectedEmoji.width - minSize;
+                    selectedEmoji.x += allowedDx;
+                    selectedEmoji.width = minSize;
+                } else {
+                    selectedEmoji.x += dx;
+                    selectedEmoji.width = newWidth;
+                }
+                break;
+            }
+            case 'right':
+                selectedEmoji.width += dx;
+                break;
+            case 'top': {
+                let newHeight = selectedEmoji.height - dy;
+                if (newHeight < minSize) {
+                    const allowedDy = selectedEmoji.height - minSize;
+                    selectedEmoji.y += allowedDy;
+                    selectedEmoji.height = minSize;
+                } else {
+                    selectedEmoji.y += dy;
+                    selectedEmoji.height = newHeight;
+                }
+                break;
+            }
+            case 'bottom':
+                selectedEmoji.height += dy;
+                break;
+        }
+
+        dragStartX = x;
+        dragStartY = y;
+        redrawCanvas();
+        return;
+    } else if (isRotating && selectedEmoji) {
+        const centerX = selectedEmoji.x + selectedEmoji.width / 2;
+        const centerY = selectedEmoji.y + selectedEmoji.height / 2;
+        const angle = Math.atan2(y - centerY, x - centerX) + Math.PI / 2;
+        selectedEmoji.angle = angle;
+        redrawCanvas();
+        return;
+    }
+
+    // 悬停时显示方向性光标（根据可见控件与命中部位）
+    const handleSize = 14;
+    const halfHandleSize = handleSize / 2;
+    const deleteOffset = 16;
+    const rotateHandleSize = 16;
+    const rotateHalfSize = rotateHandleSize / 2;
+    const rotateOffset = 26;
+
+    let cursor = 'default';
     for (let i = drawnEmojis.length - 1; i >= 0; i--) {
         const emoji = drawnEmojis[i];
-        if (x >= emoji.x && x <= emoji.x + emoji.width && y >= emoji.y && y <= emoji.y + emoji.height) {
-            hoveredEmoji = emoji;
+
+        // 转换为局部坐标（考虑旋转）
+        const centerX = emoji.x + emoji.width / 2;
+        const centerY = emoji.y + emoji.height / 2;
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const cosA = Math.cos(emoji.angle);
+        const sinA = Math.sin(emoji.angle);
+        const lx = dx * cosA + dy * sinA;
+        const ly = -dx * sinA + dy * cosA;
+
+        const controlsVisible = (controlsInitialActive && showControlsInitially) || (selectedEmoji === emoji);
+
+        if (controlsVisible) {
+            // 删除手柄（右上外侧）
+            const delX = emoji.width / 2 + deleteOffset - halfHandleSize;
+            const delY = -emoji.height / 2 - deleteOffset - halfHandleSize;
+            if (lx >= delX && lx <= delX + handleSize && ly >= delY && ly <= delY + handleSize) {
+                cursor = 'pointer';
+                break;
+            }
+
+            // 旋转手柄（上方正中，使用独立尺寸与偏移）
+            if (lx >= -rotateHalfSize && lx <= rotateHalfSize &&
+                ly >= (-emoji.height / 2 - rotateOffset - rotateHalfSize) && ly <= (-emoji.height / 2 - rotateOffset + rotateHalfSize)) {
+                cursor = 'crosshair';
+                break;
+            }
+
+            // 角手柄
+            const onTopLeft = (lx >= (-emoji.width / 2 - halfHandleSize) && lx <= (-emoji.width / 2 + halfHandleSize) &&
+                ly >= (-emoji.height / 2 - halfHandleSize) && ly <= (-emoji.height / 2 + halfHandleSize));
+            const onTopRight = (lx >= (emoji.width / 2 - halfHandleSize) && lx <= (emoji.width / 2 + halfHandleSize) &&
+                ly >= (-emoji.height / 2 - halfHandleSize) && ly <= (-emoji.height / 2 + halfHandleSize));
+            const onBottomLeft = (lx >= (-emoji.width / 2 - halfHandleSize) && lx <= (-emoji.width / 2 + halfHandleSize) &&
+                ly >= (emoji.height / 2 - halfHandleSize) && ly <= (emoji.height / 2 + halfHandleSize));
+            const onBottomRight = (lx >= (emoji.width / 2 - halfHandleSize) && lx <= (emoji.width / 2 + halfHandleSize) &&
+                ly >= (emoji.height / 2 - halfHandleSize) && ly <= (emoji.height / 2 + halfHandleSize));
+
+            if (onTopLeft || onBottomRight) {
+                cursor = 'nwse-resize';
+                break;
+            }
+            if (onTopRight || onBottomLeft) {
+                cursor = 'nesw-resize';
+                break;
+            }
+
+            // 边手柄
+            const onTop = (lx >= -halfHandleSize && lx <= halfHandleSize &&
+                ly >= (-emoji.height / 2 - halfHandleSize) && ly <= (-emoji.height / 2 + halfHandleSize));
+            const onLeft = (lx >= (-emoji.width / 2 - halfHandleSize) && lx <= (-emoji.width / 2 + halfHandleSize) &&
+                ly >= (-halfHandleSize) && ly <= (halfHandleSize));
+            const onRight = (lx >= (emoji.width / 2 - halfHandleSize) && lx <= (emoji.width / 2 + halfHandleSize) &&
+                ly >= (-halfHandleSize) && ly <= (halfHandleSize));
+            const onBottom = (lx >= -halfHandleSize && lx <= halfHandleSize &&
+                ly >= (emoji.height / 2 - halfHandleSize) && ly <= (emoji.height / 2 + halfHandleSize));
+
+            if (onTop || onBottom) {
+                cursor = 'ns-resize';
+                break;
+            }
+            if (onLeft || onRight) {
+                cursor = 'ew-resize';
+                break;
+            }
+        }
+
+        // emoji本体区域（可拖动或点击选中）
+        if (lx >= -emoji.width / 2 && lx <= emoji.width / 2 &&
+            ly >= -emoji.height / 2 && ly <= emoji.height / 2) {
+            cursor = 'move';
             break;
         }
     }
-
-    // 根据是否悬停在emoji上设置鼠标样式和选中状态
-    if (hoveredEmoji) {
-        canvas.style.cursor = 'pointer';
-        // 只有当鼠标在emoji区域内时才设置为选中状态
-        if (selectedEmoji !== hoveredEmoji) {
-            selectedEmoji = hoveredEmoji;
-            redrawCanvas();
-        }
-    } else {
-        canvas.style.cursor = 'default';
-        // 鼠标不在任何emoji区域时，清除选中状态
-        if (selectedEmoji) {
-            selectedEmoji = null;
-            redrawCanvas();
-        }
-    }
+    canvas.style.cursor = cursor;
 }
 
 // 处理canvas鼠标离开事件
@@ -885,21 +1218,225 @@ function handleCanvasMouseLeave(event) {
     // 当鼠标离开canvas区域时，清除选中状态和鼠标样式
     const canvas = event.target;
     canvas.style.cursor = 'default';
+    isDragging = false;
+    isResizing = false;
+    isRotating = false;
     
-    if (selectedEmoji) {
-        selectedEmoji = null;
-        redrawCanvas();
+    // if (selectedEmoji) {
+    //     selectedEmoji = null;
+    //     redrawCanvas();
+    // }
+}
+
+// 处理canvas mousedown事件
+function handleCanvasMouseDown(event) {
+    const canvas = event.target;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+
+    // 一旦用户开始交互，退出初始展示阶段
+    if (controlsInitialActive) {
+        controlsInitialActive = false;
+        // 不立即重绘，以便后续命中控件后统一重绘
     }
+
+    const handleSize = 14;
+    const halfHandleSize = handleSize / 2;
+    const deleteOffset = 16;
+    const rotateHandleSize = 16;
+    const rotateHalfSize = rotateHandleSize / 2;
+    const rotateOffset = 26;
+
+    // 从上到下（最后绘制在最上层）查找点击目标
+    for (let i = drawnEmojis.length - 1; i >= 0; i--) {
+        const emoji = drawnEmojis[i];
+
+        // 将点击点转换到emoji的局部坐标（考虑旋转）
+        const centerX = emoji.x + emoji.width / 2;
+        const centerY = emoji.y + emoji.height / 2;
+        const dx = x - centerX;
+        const dy = y - centerY;
+        const cosA = Math.cos(emoji.angle);
+        const sinA = Math.sin(emoji.angle);
+        const lx = dx * cosA + dy * sinA;
+        const ly = -dx * sinA + dy * cosA;
+
+        // 删除手柄（右上外侧）
+        {
+            const delX = emoji.width / 2 + deleteOffset - halfHandleSize;
+            const delY = -emoji.height / 2 - deleteOffset - halfHandleSize;
+            const hitDelete = (lx >= delX && lx <= delX + handleSize && ly >= delY && ly <= delY + handleSize);
+            if (hitDelete) {
+                // 删除该emoji
+                drawnEmojis.splice(i, 1);
+                if (selectedEmoji === emoji) {
+                    selectedEmoji = null;
+                }
+                redrawCanvas();
+                return;
+            }
+        }
+
+        // 旋转手柄（位于上方正中，使用独立尺寸与偏移）
+        if (lx >= -rotateHalfSize && lx <= rotateHalfSize &&
+            ly >= (-emoji.height / 2 - rotateOffset - rotateHalfSize) && ly <= (-emoji.height / 2 - rotateOffset + rotateHalfSize)) {
+            selectedEmoji = emoji;
+            isRotating = true;
+            return;
+        }
+
+        // 角手柄检测
+        if (lx >= (-emoji.width / 2 - halfHandleSize) && lx <= (-emoji.width / 2 + halfHandleSize) &&
+            ly >= (-emoji.height / 2 - halfHandleSize) && ly <= (-emoji.height / 2 + halfHandleSize)) {
+            selectedEmoji = emoji;
+            isResizing = true;
+            resizeMode = 'topLeft';
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+
+        if (lx >= (emoji.width / 2 - halfHandleSize) && lx <= (emoji.width / 2 + halfHandleSize) &&
+            ly >= (-emoji.height / 2 - halfHandleSize) && ly <= (-emoji.height / 2 + halfHandleSize)) {
+            selectedEmoji = emoji;
+            isResizing = true;
+            resizeMode = 'topRight';
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+
+        if (lx >= (-emoji.width / 2 - halfHandleSize) && lx <= (-emoji.width / 2 + halfHandleSize) &&
+            ly >= (emoji.height / 2 - halfHandleSize) && ly <= (emoji.height / 2 + halfHandleSize)) {
+            selectedEmoji = emoji;
+            isResizing = true;
+            resizeMode = 'bottomLeft';
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+
+        if (lx >= (emoji.width / 2 - halfHandleSize) && lx <= (emoji.width / 2 + halfHandleSize) &&
+            ly >= (emoji.height / 2 - halfHandleSize) && ly <= (emoji.height / 2 + halfHandleSize)) {
+            selectedEmoji = emoji;
+            isResizing = true;
+            resizeMode = 'bottomRight';
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+
+        // 边手柄检测：上、左、右、下
+        // 上边中点
+        if (lx >= -halfHandleSize && lx <= halfHandleSize &&
+            ly >= (-emoji.height / 2 - halfHandleSize) && ly <= (-emoji.height / 2 + halfHandleSize)) {
+            selectedEmoji = emoji;
+            isResizing = true;
+            resizeMode = 'top';
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+        // 左边中点
+        if (lx >= (-emoji.width / 2 - halfHandleSize) && lx <= (-emoji.width / 2 + halfHandleSize) &&
+            ly >= (-halfHandleSize) && ly <= (halfHandleSize)) {
+            selectedEmoji = emoji;
+            isResizing = true;
+            resizeMode = 'left';
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+        // 右边中点
+        if (lx >= (emoji.width / 2 - halfHandleSize) && lx <= (emoji.width / 2 + halfHandleSize) &&
+            ly >= (-halfHandleSize) && ly <= (halfHandleSize)) {
+            selectedEmoji = emoji;
+            isResizing = true;
+            resizeMode = 'right';
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+        // 下边中点
+        if (lx >= -halfHandleSize && lx <= halfHandleSize &&
+            ly >= (emoji.height / 2 - halfHandleSize) && ly <= (emoji.height / 2 + halfHandleSize)) {
+            selectedEmoji = emoji;
+            isResizing = true;
+            resizeMode = 'bottom';
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+
+        // 点击emoji本体区域开始拖动
+        if (lx >= -emoji.width / 2 && lx <= emoji.width / 2 &&
+            ly >= -emoji.height / 2 && ly <= emoji.height / 2) {
+            selectedEmoji = emoji;
+            isDragging = true;
+            dragStartX = x;
+            dragStartY = y;
+            return;
+        }
+    }
+
+    // 未命中任何emoji或控件时，清除选中状态
+    selectedEmoji = null;
+    redrawCanvas();
+}
+
+// 处理canvas mouseup事件
+function handleCanvasMouseUp(event) {
+    isDragging = false;
+    isResizing = false;
+    isRotating = false;
+    resizeMode = null;
 }
 
 // 处理canvas点击事件
 function handleCanvasClick(event) {
-    // 点击事件现在主要用于其他交互，选中状态由鼠标移动事件控制
-    // 可以在这里添加其他点击相关的逻辑，比如双击编辑等
+    if (drawnEmojis.length === 0) return;
+
+    const canvas = event.target;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (event.clientX - rect.left) * scaleX;
+    const y = (event.clientY - rect.top) * scaleY;
+
+    // 查找点击的emoji
+    let clickedEmoji = null;
+    for (let i = drawnEmojis.length - 1; i >= 0; i--) {
+        const emoji = drawnEmojis[i];
+        if (x >= emoji.x && x <= emoji.x + emoji.width && y >= emoji.y && y <= emoji.y + emoji.height) {
+            clickedEmoji = emoji;
+            break;
+        }
+    }
+
+    // 设置选中状态
+    if (clickedEmoji) {
+        selectedEmoji = clickedEmoji;
+    } else {
+        selectedEmoji = null;
+    }
+
+    redrawCanvas();
 }
 
 // 处理键盘按下事件
 function handleKeyDown(event) {
+    if (selectedEmoji && (event.key === 'Delete' || event.key === 'Backspace')) {
+        const index = drawnEmojis.indexOf(selectedEmoji);
+        if (index > -1) {
+            drawnEmojis.splice(index, 1);
+            selectedEmoji = null;
+            redrawCanvas();
+        }
+    }
+
     // ESC键关闭图片预览
     if (event.key === 'Escape') {
         const imagePreviewSection = document.getElementById('imagePreviewSection');
@@ -969,3 +1506,7 @@ window.addEventListener('error', (event) => {
 window.addEventListener('unhandledrejection', (event) => {
     console.error('Unhandled promise rejection:', event.reason);
 });
+    // 点击后退出初始展示阶段
+    if (controlsInitialActive) {
+        controlsInitialActive = false;
+    }
