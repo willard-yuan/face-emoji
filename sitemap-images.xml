@@ -143,4 +143,15 @@
   <url>
     <loc>https://EmojiFace.US/terms-of-service.html</loc>
   </url>
+  
+  <url>
+    <loc>https://EmojiFace.US/changelog.html</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo2.webp</image:loc>
+      <image:title>EmojiFace Changelog v1.0.0</image:title>
+      <image:caption>Editing controls to remove faces and rotate stickers, sample images picker, and optimized mobile experience.</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
 </urlset>
