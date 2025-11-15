@@ -189,7 +189,7 @@ async function loadModels() {
 
         // 并行加载模型以提高性能
         const modelPromises = [
-            faceapi.nets.ssdMobilenetv1.loadFromUri('./public/models'),
+            faceapi.nets.tinyFaceDetector.loadFromUri('./public/models'),
             faceapi.nets.faceExpressionNet.loadFromUri('./public/models')
         ];
         
@@ -345,10 +345,12 @@ function createImageFromFile(file) {
 
 // 检测人脸和表情
 async function detectFacesAndExpressions(img) {
+    const isMobile = isTouchDevice() || (typeof window !== 'undefined' && window.innerWidth <= 768);
+    const inputSize = isMobile ? 256 : 320;
     const detections = await faceapi
-        .detectAllFaces(img, new faceapi.SsdMobilenetv1Options({
-            minConfidence: 0.3,  // 提高置信度阈值，减少误检
-            maxResults: 10       // 限制最多返回10个人脸
+        .detectAllFaces(img, new faceapi.TinyFaceDetectorOptions({
+            inputSize,
+            scoreThreshold: 0.5
         }))
         .withFaceExpressions();
 
