@@ -4,8 +4,8 @@
   "description": "Turn Photos into Emoji Art with AI Face Recognition",
   "main": "index.html",
   "scripts": {
-    "start": "python3 -m http.server 8000",
-    "dev": "python3 -m http.server 8000",
+    "start": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080",
     "build": "echo 'Static site ready for deployment'",
     "vercel-build": "echo 'Vercel build completed'"
   },

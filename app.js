@@ -56,15 +56,131 @@ document.addEventListener('DOMContentLoaded', async () => {
     const canvas = document.getElementById('canvas');
     if (canvas) {
         canvas.addEventListener('click', handleCanvasClick);
-        canvas.addEventListener('mousedown', handleCanvasMouseDown);
-        canvas.addEventListener('mousemove', handleCanvasMouseMove);
-        canvas.addEventListener('mouseup', handleCanvasMouseUp);
-        canvas.addEventListener('mouseleave', handleCanvasMouseLeave);
+        // 优先使用 Pointer 事件，触控设备更稳定；旧设备回退到 Touch + Mouse
+        if (window.PointerEvent) {
+            canvas.addEventListener('pointerdown', handleCanvasPointerDown);
+            canvas.addEventListener('pointermove', handleCanvasPointerMove);
+            canvas.addEventListener('pointerup', handleCanvasPointerUp);
+            canvas.addEventListener('pointerleave', handleCanvasPointerLeave);
+        } else {
+            // Touch 事件（防止滚动干扰）
+            canvas.addEventListener('touchstart', handleCanvasTouchStart, { passive: false });
+            canvas.addEventListener('touchmove', handleCanvasTouchMove, { passive: false });
+            canvas.addEventListener('touchend', handleCanvasTouchEnd);
+            canvas.addEventListener('touchcancel', handleCanvasTouchCancel);
+
+            // Mouse 事件作为补充
+            canvas.addEventListener('mousedown', handleCanvasMouseDown);
+            canvas.addEventListener('mousemove', handleCanvasMouseMove);
+            canvas.addEventListener('mouseup', handleCanvasMouseUp);
+            canvas.addEventListener('mouseleave', handleCanvasMouseLeave);
+        }
     }
 
     // 添加键盘事件监听器
     window.addEventListener('keydown', handleKeyDown);
 });
+
+// 独立挂载移动菜单的交互增强：
+// 1) 点击外部区域自动关闭
+// 2) 按下 Escape 键关闭
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        const mobileToggle = document.getElementById('mobileMenuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const toggleLabel = document.querySelector('label.btn-toggle');
+
+        if (!mobileToggle || !mobileMenu) return;
+
+        const closeIfOutside = (event) => {
+            if (!mobileToggle.checked) return;
+            const target = event.target;
+            const clickedInsideMenu = mobileMenu.contains(target);
+            const clickedToggleLabel = toggleLabel ? toggleLabel.contains(target) : false;
+            const clickedCheckbox = target === mobileToggle;
+            if (!clickedInsideMenu && !clickedToggleLabel && !clickedCheckbox) {
+                mobileToggle.checked = false;
+            }
+        };
+
+        document.addEventListener('click', closeIfOutside, true);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && mobileToggle.checked) {
+                mobileToggle.checked = false;
+            }
+        });
+    } catch (err) {
+        console.warn('Mobile menu enhancement failed:', err);
+    }
+});
+
+// 设备能力与控件尺寸（移动端更易点按）
+function isTouchDevice() {
+    return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+}
+
+function getHandleMetrics() {
+    const touch = isTouchDevice();
+    return {
+        handleSize: touch ? 22 : 14,
+        deleteOffset: touch ? 20 : 16,
+        rotateHandleSize: touch ? 24 : 16,
+        rotateOffset: touch ? 32 : 26,
+    };
+}
+
+// Pointer 事件包装：复用现有鼠标处理逻辑
+function handleCanvasPointerDown(event) {
+    const canvas = event.target;
+    if (event.pointerId != null && canvas.setPointerCapture) {
+        try { canvas.setPointerCapture(event.pointerId); } catch (e) {}
+    }
+    event.preventDefault();
+    handleCanvasMouseDown(event);
+}
+
+function handleCanvasPointerMove(event) {
+    event.preventDefault();
+    handleCanvasMouseMove(event);
+}
+
+function handleCanvasPointerUp(event) {
+    const canvas = event.target;
+    if (event.pointerId != null && canvas.releasePointerCapture) {
+        try { canvas.releasePointerCapture(event.pointerId); } catch (e) {}
+    }
+    event.preventDefault();
+    handleCanvasMouseUp(event);
+}
+
+function handleCanvasPointerLeave(event) {
+    event.preventDefault();
+    handleCanvasMouseLeave(event);
+}
+
+// Touch 事件包装：归一化 clientX/clientY 后复用鼠标逻辑
+function handleCanvasTouchStart(event) {
+    event.preventDefault();
+    const t = event.touches[0] || event.changedTouches[0];
+    if (!t) return;
+    handleCanvasMouseDown({ target: event.target, clientX: t.clientX, clientY: t.clientY });
+}
+
+function handleCanvasTouchMove(event) {
+    event.preventDefault();
+    const t = event.touches[0] || event.changedTouches[0];
+    if (!t) return;
+    handleCanvasMouseMove({ target: event.target, clientX: t.clientX, clientY: t.clientY });
+}
+
+function handleCanvasTouchEnd(event) {
+    const t = (event.changedTouches && event.changedTouches[0]) || null;
+    handleCanvasMouseUp({ target: event.target, clientX: t ? t.clientX : 0, clientY: t ? t.clientY : 0 });
+}
+
+function handleCanvasTouchCancel(event) {
+    handleCanvasMouseLeave({ target: event.target });
+}
 
 // 加载face-api.js模型
 async function loadModels() {
@@ -257,41 +373,6 @@ async function detectFacesAndExpressions(img) {
     return detections;
 }
 
-// 显示提示框
-function showTooltip() {
-    const tooltip = document.getElementById('tooltip');
-    if (!tooltip || drawnEmojis.length === 0) return;
-
-    const container = document.querySelector('.uploaded-image-container');
-    const canvas = document.getElementById('canvas');
-    
-    if (!container || !canvas) return;
-
-    // 将tooltip定位在容器的右上角
-    const containerRect = container.getBoundingClientRect();
-    const canvasRect = canvas.getBoundingClientRect();
-    
-    // 相对于容器的定位
-    const tooltipTop = 20; // 距离容器顶部20px
-    const tooltipRight = 20; // 距离容器右侧20px
-
-    tooltip.style.top = `${tooltipTop}px`;
-    tooltip.style.right = `${tooltipRight}px`;
-    tooltip.style.left = 'auto'; // 清除之前的left定位
-    tooltip.innerHTML = '💡 Click to select emojis and press Delete key to remove unwanted ones';
-    tooltip.style.display = 'block';
-    tooltip.style.opacity = '1';
-    tooltip.style.transform = 'translateY(0)';
-
-    setTimeout(() => {
-        tooltip.style.opacity = '0';
-        tooltip.style.transform = 'translateY(-10px)';
-        setTimeout(() => {
-            tooltip.style.display = 'none';
-        }, 300); // Corresponds to transition time
-    }, 4000); // 显示4秒
-}
-
 // 在人脸上绘制表情符号
 async function drawEmojiOnFaces(img, detections) {
     processedCanvas = document.getElementById('canvas');
@@ -313,7 +394,6 @@ async function drawEmojiOnFaces(img, detections) {
     // 首次添加后进入初始展示阶段（根据配置）
     controlsInitialActive = !!showControlsInitially;
     redrawCanvas();
-    showTooltip();
 }
 
 // 为单个检测结果绘制表情符号
@@ -876,12 +956,9 @@ function redrawCanvas() {
     });
 
     // 控件绘制
-    const handleSize = 14;
+    const { handleSize, deleteOffset, rotateHandleSize, rotateOffset } = getHandleMetrics();
     const halfHandleSize = handleSize / 2;
-    const deleteOffset = 16; // 删除手柄相对边框的偏移距离（适中，避免过近）
-    const rotateHandleSize = 16; // 旋转手柄菱形边长（稍微增大）
     const rotateHalfSize = rotateHandleSize / 2;
-    const rotateOffset = 26; // 旋转手柄距离顶部边框的偏移（稍微靠远）
 
     if (controlsInitialActive && showControlsInitially) {
         // 初始展示阶段：为所有emoji绘制控件
@@ -1125,12 +1202,9 @@ function handleCanvasMouseMove(event) {
     }
 
     // 悬停时显示方向性光标（根据可见控件与命中部位）
-    const handleSize = 14;
+    const { handleSize, deleteOffset, rotateHandleSize, rotateOffset } = getHandleMetrics();
     const halfHandleSize = handleSize / 2;
-    const deleteOffset = 16;
-    const rotateHandleSize = 16;
     const rotateHalfSize = rotateHandleSize / 2;
-    const rotateOffset = 26;
 
     let cursor = 'default';
     for (let i = drawnEmojis.length - 1; i >= 0; i--) {
@@ -1243,12 +1317,9 @@ function handleCanvasMouseDown(event) {
         // 不立即重绘，以便后续命中控件后统一重绘
     }
 
-    const handleSize = 14;
+    const { handleSize, deleteOffset, rotateHandleSize, rotateOffset } = getHandleMetrics();
     const halfHandleSize = handleSize / 2;
-    const deleteOffset = 16;
-    const rotateHandleSize = 16;
     const rotateHalfSize = rotateHandleSize / 2;
-    const rotateOffset = 26;
 
     // 从上到下（最后绘制在最上层）查找点击目标
     for (let i = drawnEmojis.length - 1; i >= 0; i--) {

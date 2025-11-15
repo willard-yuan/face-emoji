@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="480" viewBox="0 0 480 480">
+  <defs>
+    <linearGradient id="gradMagenta" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ff4dca"/>
+      <stop offset="100%" stop-color="#6c47ff"/>
+    </linearGradient>
+    <linearGradient id="gradCyan" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00e0ff"/>
+      <stop offset="100%" stop-color="#6c47ff"/>
+    </linearGradient>
+    <linearGradient id="shieldGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#00e0ff"/>
+      <stop offset="50%" stop-color="#7b5cff"/>
+      <stop offset="100%" stop-color="#ff4dca"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="rgba(0,0,0,0.35)"/>
+    </filter>
+    <filter id="innerGlow">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feBlend in="SourceGraphic" in2="blur" mode="screen"/>
+    </filter>
+  </defs>
+
+  <rect x="0" y="0" width="480" height="480" rx="48" fill="#2c2c2c"/>
+
+  <!-- Corner scan brackets -->
+  <g stroke-linecap="round" stroke-width="20" fill="none">
+    <path d="M40 120 V60 H100" stroke="url(#gradMagenta)"/>
+    <path d="M380 60 H440 V120" stroke="url(#gradMagenta)"/>
+    <path d="M40 360 V420 H100" stroke="url(#gradCyan)"/>
+    <path d="M380 420 H440 V360" stroke="url(#gradCyan)"/>
+  </g>
+
+  <!-- Person silhouette (kept minimal, no major layout change) -->
+  <g transform="translate(0,12)">
+    <circle cx="240" cy="186" r="66" fill="#f4c183"/>
+    <path d="M190 160 C205 140 225 132 240 130 C255 132 275 140 290 160 C275 142 255 134 240 134 C225 134 205 142 190 160 Z" fill="#c07a4a"/>
+    <path d="M156 320 C168 268 204 238 240 238 C276 238 312 268 324 320 C324 332 316 340 304 340 H176 C164 340 156 332 156 320 Z" fill="#25c26c"/>
+    <path d="M208 308 C222 288 234 280 240 280 C246 280 258 288 272 308 L208 308 Z" fill="#ffffff" opacity="0.9"/>
+  </g>
+
+  <!-- Protective shield replacing previous blur -->
+  <g filter="url(#softShadow)">
+    <path d="M240 138 L292 158 C300 161 306 168 306 176 V222 C306 248 292 278 260 298 L240 310 L220 298 C188 278 174 248 174 222 V176 C174 168 180 161 188 158 L240 138 Z"
+          fill="url(#shieldGradient)" stroke="#ffffff" stroke-width="4"/>
+    <path d="M240 150 C270 162 289 180 289 205 C289 240 267 268 240 281 C213 268 191 240 191 205 C191 180 210 162 240 150 Z"
+          fill="#ffffff" opacity="0.15" filter="url(#innerGlow)"/>
+  </g>
+
+  <!-- Subtle foreground highlight for depth -->
+  <ellipse cx="240" cy="356" rx="120" ry="18" fill="#000" opacity="0.2"/>
+</svg>

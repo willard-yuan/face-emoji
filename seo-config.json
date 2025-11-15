@@ -20,7 +20,7 @@
       "organization": {
         "name": "EmojiFace.US",
         "url": "https://EmojiFace.US",
-        "logo": "https://EmojiFace.US/public/favicon.ico",
+  "logo": "https://EmojiFace.US/public/favicon.svg",
         "description": "AI-powered emoji face generator and Labubu emoji creator for privacy and fun",
         "sameAs": [
           "https://twitter.com/emojiface",
