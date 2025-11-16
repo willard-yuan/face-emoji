@@ -407,6 +407,89 @@ main {
     background-color: #f8f9fa;
 }
 
+/* Other Tools Page */
+.tools-hero {
+    background: #ffffff;
+    padding: 80px 0 100px;
+}
+
+.tools-title {
+    font-size: 2.75rem;
+    font-weight: 800;
+    text-align: center;
+    color: #111;
+    margin: 8px 0 12px;
+}
+
+.tools-subtitle {
+    font-size: 1.1rem;
+    color: #666;
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 32px;
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.tool-card {
+    background: #ffffff;
+    color: #242424;
+    border-radius: 16px;
+    border: 1px solid #eee;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+    padding: 20px;
+}
+
+.tool-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    background: #f0f3ff;
+    color: #6c47ff;
+    margin-bottom: 12px;
+}
+
+.tool-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 6px;
+}
+
+.tool-desc {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 14px;
+}
+
+.tool-btn {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    padding: 10px 16px;
+    border-radius: 10px;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    background: linear-gradient(90deg, #6c47ff 0%, #ff4dca 100%);
+}
+
+@media (max-width: 992px) {
+    .tools-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+    .tools-grid { grid-template-columns: 1fr; }
+}
+
 /* Article Page Styles - Medium Style */
 .article-header {
     background: #ffffff;
