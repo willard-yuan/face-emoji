@@ -335,7 +335,7 @@ main {
 
 /* Hero Section */
 .hero {
-    padding: 50px 0 30px;
+    padding: 20px 0 30px;
     background-color: #fff;
     position: relative;
     overflow: hidden;
@@ -357,6 +357,7 @@ main {
     font-size: 3.3rem;
     line-height: 1.2;
     margin-bottom: 20px;
+    margin-top: 20px;
     font-weight: 800;
     color: #111;
 }
