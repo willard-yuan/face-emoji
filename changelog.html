@@ -66,11 +66,59 @@
     <main role="main" id="main-content">
         <section class="changelog-hero">
             <div class="container">
-                <nav class="breadcrumb"><a href="index.html">Home</a> / <span>Changelog</span></nav>
+                <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span>Changelog</span></nav>
                 <div class="changelog-hero-inner">
-                    <div class="changelog-icon">📄</div>
+                    <div class="changelog-icon">
+                        <span class="icon-glow"></span>
+                        <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z" fill="currentColor"></path>
+                            <path d="M14 2v6h6" fill="#ffffff" fill-opacity="0.35"></path>
+                            <rect x="8" y="11" width="8" height="2" rx="1" fill="#ffffff" fill-opacity="0.8"></rect>
+                            <rect x="8" y="15" width="6" height="2" rx="1" fill="#ffffff" fill-opacity="0.8"></rect>
+                        </svg>
+                    </div>
                     <h1 class="changelog-title">Changelog</h1>
                     <p class="changelog-subtitle">Track updates, new features, and improvements to EmojiFace</p>
+                </div>
+                <div class="changelog-card">
+                    <div class="changelog-card-header">
+                        <span class="version-badge">v1.1.0</span>
+                        <span class="date-badge">November 24th, 2025</span>
+                    </div>
+                    <div class="changelog-section">
+                        <h2 class="changelog-section-title">New Pages & Content</h2>
+                        <ul class="changelog-list">
+                            <li>Added <a href="other-tools.html" aria-label="Open Other Tools page"></a>Other Tools</a> page with unified header and footer, curated tool cards, and gradient buttons</li>
+                            <li>Updated tool links: dofollow for Discord Fonts, Markdown Previewer, GIF Extractor, and Playlist Length; nofollow for Emoji to Image; removed EmojiFace card; added Discord Decorations card</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-section">
+                        <h2 class="changelog-section-title">Navigation & Breadcrumbs</h2>
+                        <ul class="changelog-list">
+                            <li>Added Other Tools to global navigation on desktop and mobile across all pages</li>
+                            <li>Revamped breadcrumb style with gradient “>” separators; aligned spacing with <a href="blog.html" aria-label="Open Blog page">Blog</a>; replaced “/” with “>”</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-section">
+                        <h2 class="changelog-section-title">UI & Animations</h2>
+                        <ul class="changelog-list">
+                            <li>Improved mobile menu animation with smooth slide, scale and staggered item reveal — see <a href="index.html" aria-label="Open Homepage">Homepage</a></li>
+                            <li>Replaced menu click box highlight with glow accent on links; enhanced logo click effect with subtle flash and glow</li>
+                        </ul>
+                    </div>
+                    <div class="changelog-section">
+                        <h2 class="changelog-section-title">Blog List</h2>
+                        <ul class="changelog-list">
+                            <li>Redesigned blog cards to two‑column layout with badges and gradient CTA; background remains white — see <a href="blog.html" aria-label="Open Blog page">Blog</a></li>
+                        </ul>
+                    </div>
+                    <div class="changelog-section">
+                        <h2 class="changelog-section-title">Changelog Styling</h2>
+                        <ul class="changelog-list">
+                            <li>Upgraded changelog icon to gradient glow SVG</li>
+                            <li>Upgraded Go to Homepage to a gradient button with icon and shadow</li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="changelog-card">
                     <div class="changelog-card-header">
@@ -87,7 +135,10 @@
                         </ul>
                     </div>
                     <div class="changelog-section">
-                        <a class="changelog-cta" href="index.html">Go to Homepage →</a>
+                        <a class="changelog-cta" href="index.html" aria-label="Go to EmojiFace Homepage">
+                            <svg class="cta-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12l9-9 9 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 21V9h6v12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            <span>Go to Homepage</span>
+                        </a>
                     </div>
                 </div>
             </div>
