@@ -3402,3 +3402,8 @@ main {
     .changelog-title { font-size: 36px; }
     .changelog-card { padding: 22px; }
 }
+
+/* 谷歌广告样式调整 */
+body {
+    padding-bottom: 0px !important;
+}
