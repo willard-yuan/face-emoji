@@ -49,6 +49,9 @@
     <link rel="icon" type="image/png" sizes="512x512" href="public/android-chrome-512x512.png">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="mask-icon" href="public/safari-pinned-tab.svg" color="#6C47FF">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="seo-optimization.css">
     
@@ -147,10 +150,12 @@
             </div>
             <div class="nav-wrapper">
                 <nav class="nav-links" role="navigation" itemscope itemtype="https://schema.org/SiteNavigationElement" aria-label="Main navigation">
-                    <a href="index.html#features" itemprop="url" aria-label="Go to Features section">Features</a>
-                    <a href="index.html#how-it-works" itemprop="url" aria-label="Go to How It Works section">How It Works</a>
-                    <a href="index.html#faq" itemprop="url" aria-label="Go to FAQ section">FAQ</a>
-                    <a href="blog.html" itemprop="url" aria-label="Go to Blog page">Blog</a>
+                    <a href="index.html#features" itemprop="url">Features</a>
+                    <a href="index.html#how-it-works" itemprop="url">How It Works</a>
+                    <a href="index.html#faq" itemprop="url">FAQ</a>
+                    <a href="blog.html" itemprop="url">Blog</a>
+                    <a href="other-tools.html" itemprop="url">Other Tools</a>
+                    <a href="changelog.html" itemprop="url">Changelog</a>
                 </nav>
                 <!-- Mobile hamburger toggle button -->
                 <label for="mobileMenuToggle" class="btn-toggle" aria-label="Toggle navigation" aria-controls="mobileMenu">
@@ -164,6 +169,8 @@
                 <a href="index.html#how-it-works" role="menuitem">How It Works</a>
                 <a href="index.html#faq" role="menuitem">FAQ</a>
                 <a href="blog.html" role="menuitem">Blog</a>
+                <a href="other-tools.html" role="menuitem">Other Tools</a>
+                <a href="changelog.html" role="menuitem">Changelog</a>
             </div>
         </div>
     </header>
@@ -171,10 +178,11 @@
     <main role="main" id="main-content">
         <!-- Article Header -->
         <section class="article-header">
-            <div class="container">
-                <div class="breadcrumb">
-                    <a href="index.html">Home</a> > <a href="blog.html">Blog</a> > <span>How to Mask Face Using EmojiFace.us</span>
-                </div>
+        <div class="container">
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <a href="index.html">Home</a><a href="blog.html">Blog</a><span>How to Mask Face Using EmojiFace.us</span>
+            </nav>
+            <div class="article-header-content">
                 <h1 class="article-main-title">How to Mask Face Using EmojiFace.us: Complete Labubu Emoji Guide</h1>
                 <div class="article-meta">
                     <span class="article-date">📅 January 28, 2025</span>
@@ -189,7 +197,8 @@
                     <span class="tag">How-to Guide</span>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
 
         <!-- Article Content -->
         <article class="article-content">
