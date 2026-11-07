@@ -272,7 +272,7 @@
     }
     </script>
 </head>
-<body itemscope itemtype="https://schema.org/WebPage">
+<body class="blog-page" itemscope itemtype="https://schema.org/WebPage">
     <!-- Skip to main content for accessibility -->
     <!--<a href="#main-content" class="skip-link">Skip to main content</a> -->
     <header class="header" role="banner">
@@ -288,7 +288,7 @@
                     <a href="index.html#features" itemprop="url">Features</a>
                     <a href="index.html#how-it-works" itemprop="url">How It Works</a>
                     <a href="index.html#faq" itemprop="url">FAQ</a>
-                    <a href="blog.html" itemprop="url">Blog</a>
+                    <a href="blog.html" itemprop="url" class="nav-current" aria-current="page">Blog</a>
                     <a href="other-tools.html" itemprop="url">Other Tools</a>
                     <a href="changelog.html" itemprop="url">Changelog</a>
                 </nav>
@@ -301,7 +301,7 @@
                 <a href="index.html#features" role="menuitem">Features</a>
                 <a href="index.html#how-it-works" role="menuitem">How It Works</a>
                 <a href="index.html#faq" role="menuitem">FAQ</a>
-                <a href="blog.html" role="menuitem">Blog</a>
+                <a href="blog.html" role="menuitem" class="nav-current" aria-current="page">Blog</a>
                 <a href="other-tools.html" role="menuitem">Other Tools</a>
                 <a href="changelog.html" role="menuitem">Changelog</a>
             </div>
@@ -309,83 +309,94 @@
     </header>
     
     <main role="main" itemprop="mainContentOfPage" id="main-content">
-        <!-- Blog Articles Section -->
         <section class="blog-articles">
             <div class="container">
-                <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span>Blog</span></nav>
+                <nav class="breadcrumb" aria-label="Breadcrumb">
+                    <ol>
+                        <li><a href="index.html">Home</a></li>
+                        <li><span aria-current="page">Blog</span></li>
+                    </ol>
+                </nav>
+
+                <header class="blog-page-head">
+                    <div>
+                        <h1>Blog</h1>
+                        <p>Practical guides on hiding faces with emojis and sharing photos privately.</p>
+                    </div>
+                    <span class="article-count">3 articles</span>
+                </header>
+
                 <div class="articles-grid">
 
-                    <!-- Article 2 -->
-                    <article class="article-card" onclick="window.location.href='how-to-hide-faces-in-photos-with-emojis.html'" style="cursor: pointer;">
-                        <div class="article-image">
-                            <img src="public/images/emojiface.dot_demo.gif" alt="How to Hide Faces in Photos with Emojis" />
-                        </div>
-                        <div class="article-content">
-                            <div class="article-badges"><span class="article-badge">New Release</span></div>
-                            <div class="article-meta">
-                                <span class="article-date">📅 2025-08-10</span>
-                                <span class="article-read-time">⏱️ 6 min read</span>
+                    <article class="article-item">
+                        <a class="article-card" href="how-to-hide-faces-in-photos-with-emojis.html">
+                            <div class="article-image">
+                                <img src="public/images/emojiface.dot_demo.gif" alt="EmojiFace.us demo showing faces in a group photo covered with emoji" decoding="async" fetchpriority="high" />
                             </div>
-                            <h2 class="article-title">How to hide faces in photos with emojis on iPhone?</h2>
-                            <p class="article-description">Discover the smart and convenient way to hide faces in photos using emojis with EmojiFace.us. Learn why our AI-powered solution is far superior to traditional methods...</p>
-                            <div class="article-tags">
-                                <span class="tag">Face Privacy</span>
-                                <span class="tag">Emoji Mask</span>
-                                <span class="tag">AI Technology</span>
+                            <div class="article-content">
+                                <div class="article-eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Tutorial<span class="eyebrow-sep" aria-hidden="true">·</span><span class="eyebrow-flag">New</span></div>
+                                <h2 class="article-title">How to hide faces in photos with emojis on iPhone?</h2>
+                                <p class="article-description">Discover the smart and convenient way to hide faces in photos using emojis with EmojiFace.us, and why an AI-powered solution beats manual masking on iPhone.</p>
+                                <div class="article-foot">
+                                    <div class="article-meta">
+                                        <time class="article-date" datetime="2025-08-10">Aug 10, 2025</time>
+                                        <span class="meta-sep" aria-hidden="true">·</span>
+                                        <span class="article-read-time"><svg class="meta-icon" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.6V8l2.4 1.4"/></svg>6 min read</span>
+                                        <span class="tag">Face Privacy</span>
+                                    </div>
+                                    <span class="read-article-btn">Read article <span class="read-arrow" aria-hidden="true">→</span></span>
+                                </div>
                             </div>
-                            <a href="how-to-hide-faces-in-photos-with-emojis.html" class="read-article-btn">Read Article →</a>
-                        </div>
+                        </a>
                     </article>
 
-                    <!-- Article 1 -->
-                    <article class="article-card" onclick="window.location.href='mask-face-labubu-emoji.html'" style="cursor: pointer;">
-                        <div class="article-image">
-                            <img src="public/images/emojified-photo2.webp" alt="Mask Face with Labubu Emoji" />
-                        </div>
-                        <div class="article-content">
-                            <div class="article-badges"><span class="article-badge">Labubu Emoji</span></div>
-                            <div class="article-meta">
-                                <span class="article-date">📅 2025-07-15</span>
-                                <span class="article-read-time">⏱️ 5 min read</span>
+                    <article class="article-item">
+                        <a class="article-card" href="mask-face-labubu-emoji.html">
+                            <div class="article-image">
+                                <img src="public/images/emojified-photo2.webp" alt="Two people with faces covered by pink and brown Labubu emoji masks" loading="lazy" decoding="async" />
                             </div>
-                            <h2 class="article-title">Mask Face with Labubu Emoji</h2>
-                            <p class="article-description">Today, we'll dive deep into the fascinating science behind face-to-emoji transformation, particularly focusing on the beloved Labubu emoji characters that have captured hearts worldwide.</p>
-                            <div class="article-tags">
-                                <span class="tag">Mask Face</span>
-                                <span class="tag">Labubu Face</span>
-                                <span class="tag">Emoji Face</span>
+                            <div class="article-content">
+                                <div class="article-eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Guide</div>
+                                <h2 class="article-title">Mask Face with Labubu Emoji</h2>
+                                <p class="article-description">A look at the science behind face-to-emoji transformation, and the beloved Labubu characters that captured hearts worldwide.</p>
+                                <div class="article-foot">
+                                    <div class="article-meta">
+                                        <time class="article-date" datetime="2025-07-15">Jul 15, 2025</time>
+                                        <span class="meta-sep" aria-hidden="true">·</span>
+                                        <span class="article-read-time"><svg class="meta-icon" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.6V8l2.4 1.4"/></svg>5 min read</span>
+                                        <span class="tag">Labubu</span>
+                                    </div>
+                                    <span class="read-article-btn">Read article <span class="read-arrow" aria-hidden="true">→</span></span>
+                                </div>
                             </div>
-                            <a href="mask-face-labubu-emoji.html" class="read-article-btn">Read Article →</a>
-                        </div>
+                        </a>
                     </article>
 
-                    <!-- Article 3 -->
-                    <article class="article-card" onclick="window.location.href='how-to-mask-face-using-emojiface-dot-us.html'" style="cursor: pointer;">
-                        <div class="article-image">
-                            <img src="public/images/emojified-photo3.png" alt="How to Mask Face to Protect Your Face Privacy Using EmojiFace.us" />
-                        </div>
-                        <div class="article-content">
-                            <div class="article-badges"><span class="article-badge">Guide</span></div>
-                            <div class="article-meta">
-                                <span class="article-date">📅 2025-07-01</span>
-                                <span class="article-read-time">⏱️ 7 min read</span>
+                    <article class="article-item">
+                        <a class="article-card" href="how-to-mask-face-using-emojiface-dot-us.html">
+                            <div class="article-image">
+                                <img src="public/images/emojified-photo3.webp" alt="Three women with faces covered by gray, brown and blue Labubu emoji masks" loading="lazy" decoding="async" />
                             </div>
-                            <h2 class="article-title">How to Mask Face to Protect Your Face Privacy Using EmojiFace.us</h2>
-                            <p class="article-description">Looking to transform your photos with adorable Labubu Emoji characters? This comprehensive guide will show you exactly how to mask face using EmojiFace.us...</p>
-                            <div class="article-tags">
-                                <span class="tag">Face Protect</span>
-                                <span class="tag">Labubu Emoji</span>
-                                <span class="tag">EmojiFace.US</span>
+                            <div class="article-content">
+                                <div class="article-eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>How-to</div>
+                                <h2 class="article-title">How to Mask Face to Protect Your Face Privacy Using EmojiFace.us</h2>
+                                <p class="article-description">A step-by-step guide to covering faces in your photos with emoji stickers, so you can share freely without giving up your privacy.</p>
+                                <div class="article-foot">
+                                    <div class="article-meta">
+                                        <time class="article-date" datetime="2025-07-01">Jul 1, 2025</time>
+                                        <span class="meta-sep" aria-hidden="true">·</span>
+                                        <span class="article-read-time"><svg class="meta-icon" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.6V8l2.4 1.4"/></svg>7 min read</span>
+                                        <span class="tag">How-to</span>
+                                    </div>
+                                    <span class="read-article-btn">Read article <span class="read-arrow" aria-hidden="true">→</span></span>
+                                </div>
                             </div>
-                            <a href="how-to-mask-face-using-emojiface-dot-us.html" class="read-article-btn">Read Article →</a>
-                        </div>
+                        </a>
                     </article>
                 </div>
             </div>
         </section>
-        </section>
-
-        </main>
+    </main>
 
         <footer class="footer" role="contentinfo" itemscope itemtype="https://schema.org/WPFooter">
             <div class="footer-content">

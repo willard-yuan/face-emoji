@@ -423,6 +423,10 @@
                         </div>
                         <div class="upload-text" id="upload-instructions">Drag and drop your photo here - jpeg, jpg, png, webp format</div>
                         <div class="upload-subtext">or click to select a file</div>
+                        <div class="upload-readiness" id="uploadReadiness" role="status" hidden>
+                            <span class="readiness-dot" aria-hidden="true"></span>
+                            <span id="uploadReadinessText">Getting ready — you can pick a photo now</span>
+                        </div>
                     </div>
                     <input type="file" id="fileInput" accept="image/*" aria-label="Select photo file to upload">
                     
@@ -454,26 +458,42 @@
                 
                 <!-- Image Preview Section -->
                 <div class="image-preview-section" id="imagePreviewSection" style="display: none;">
-                    <!-- Processing overlay -->
-                    <div class="processing-overlay" id="processingOverlay" style="display: none;">
+                    <!-- Processing overlay: staged, cancellable, accessible -->
+                    <div class="processing-overlay" id="processingOverlay" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="processingHeading" aria-describedby="processingNote" aria-busy="false">
                         <div class="processing-content">
-                            <div class="processing-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                            <div class="processing-photo" aria-hidden="true">
+                                <img id="processingThumb" alt="">
+                                <span class="processing-scanline"></span>
                             </div>
-                            <h3>Analyzing facial features...</h3>
-                            <div class="progress-bar">
-                                <div class="progress-fill"></div>
+
+                            <h3 id="processingHeading">Finding faces</h3>
+                            <p class="processing-privacy">Your photo stays on this device — nothing is uploaded</p>
+
+                            <ol class="stage-list" id="processingStages" aria-label="Processing steps">
+                                <li class="stage-chip is-active" data-stage="detect" aria-current="step"><span class="stage-num">1</span> Find faces</li>
+                                <li class="stage-chip" data-stage="draw"><span class="stage-num">2</span> Place emojis</li>
+                                <li class="stage-chip" data-stage="done"><span class="stage-num">3</span> Finish</li>
+                            </ol>
+                            <div class="stage-track" id="processingTrack" role="progressbar" aria-label="Processing progress" aria-valuemin="0" aria-valuemax="3" aria-valuenow="1" aria-valuetext="Finding faces">
+                                <span class="stage-segment is-active"></span>
+                                <span class="stage-segment"></span>
+                                <span class="stage-segment"></span>
                             </div>
-                            <div class="emoji-preview">
-                                <span>😊</span>
-                                <span>😮</span>
-                                <span>😲</span>
-                                <span>✨</span>
-                                <span>🎭</span>
-                                <span>🎨</span>
+
+                            <p class="processing-note" id="processingNote">Usually just a few seconds</p>
+                            <p class="processing-slow" id="processingSlow" hidden>Taking longer than usual — you can cancel and try a smaller photo.</p>
+
+                            <div class="processing-error" id="processingError" hidden>
+                                <p class="processing-error-title" id="processingErrorTitle"></p>
+                                <p class="processing-error-desc" id="processingErrorDesc"></p>
+                                <button type="button" class="processing-retry" id="processingErrorAction">Try again</button>
                             </div>
-                            <p>There are over 3,600 emojis in the Unicode Standard.</p>
-                            <p class="completion-time">Estimated completion in 10 seconds...</p>
+
+                            <div class="processing-actions">
+                                <span class="processing-hint">Esc to cancel</span>
+                                <button type="button" class="processing-cancel" id="processingCancel">Cancel</button>
+                            </div>
+                            <span class="sr-only" id="processingLive" aria-live="polite"></span>
                         </div>
                     </div>
                     
@@ -559,6 +579,7 @@
                         </div>
                         
                         <button class="btn emoji-apply-btn" id="emojiApplyBtn" onclick="applyEmojiToFace()" aria-label="Apply selected emoji style to detected faces in the uploaded photo">Click to add Emoji to Face</button>
+                        <p class="apply-hint" id="applyHint" role="status" hidden></p>
                     </div>
                 </div>
             </div>

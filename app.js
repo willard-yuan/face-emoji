@@ -6,8 +6,16 @@ let selectedEmojiStyle = 'random_labubu';
 let detectedFaces = null;
 let drawnEmojis = [];
 let selectedEmoji = null;
-let progressInterval = null;
-let currentProgress = 0;
+// 处理中状态：软取消、延迟/慢提示定时器、任务编号、焦点归还
+let isProcessing = false;
+let processingCancelled = false;
+let processingShowTimer = null;
+let processingSlowTimer = null;
+let processingRunId = 0;
+let lastFocusedElement = null;
+let applyHintTimer = null;
+let modelLoadFailed = false;
+let processingShownAt = 0;
 let isDragging = false;
 let isResizing = false;
 let isRotating = false;
@@ -34,23 +42,13 @@ const expressionMap = {
 };
 
 // 初始化
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadModels();
+document.addEventListener('DOMContentLoaded', () => {
+    // 先绑定全部交互，模型放后台加载：首屏不再出现"点了没反应"的空白期
     setupEventListeners();
     setupTabSwitching();
     setupEmojiSelection();
     
-    // 设置关闭按钮事件
-    const closeBtn = document.getElementById('closePreview');
-    if (closeBtn) {
-        closeBtn.addEventListener('click', closeImagePreview);
-    }
-    
-    // 设置应用emoji按钮事件
-    const applyBtn = document.getElementById('applyEmoji');
-    if (applyBtn) {
-        applyBtn.addEventListener('click', applyEmojiToFace);
-    }
+    // 关闭按钮与应用按钮已在 HTML 上通过 onclick 绑定，此处不再重复挂载
 
     // 为canvas添加点击事件监听器
     const canvas = document.getElementById('canvas');
@@ -79,6 +77,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 添加键盘事件监听器
     window.addEventListener('keydown', handleKeyDown);
+
+    updateModelReadiness();
+    loadModels().finally(updateModelReadiness);
 });
 
 // 独立挂载移动菜单的交互增强：
@@ -184,6 +185,7 @@ function handleCanvasTouchCancel(event) {
 
 // 加载face-api.js模型
 async function loadModels() {
+    modelLoadFailed = false;
     try {
         console.log('Loading face-api.js models...');
 
@@ -202,6 +204,7 @@ async function loadModels() {
         // 更友好的错误处理，不阻塞用户体验
         console.warn('AI models failed to load. Some features may be limited.');
         isModelsLoaded = false;
+        modelLoadFailed = true;
     }
 }
 
@@ -209,6 +212,11 @@ async function loadModels() {
 function setupEventListeners() {
     const fileInput = document.getElementById('fileInput');
     const uploadArea = document.getElementById('uploadArea');
+
+    const processingCancel = document.getElementById('processingCancel');
+    if (processingCancel) {
+        processingCancel.addEventListener('click', cancelProcessing);
+    }
 
     // 文件选择
     fileInput.addEventListener('change', handleFileSelect);
@@ -526,6 +534,8 @@ function showImagePreview(img) {
 
 // 关闭图片预览
 function closeImagePreview() {
+    if (isProcessing) cancelProcessing();
+
     const imagePreviewSection = document.getElementById('imagePreviewSection');
     const canvas = document.getElementById('canvas');
     const uploadedImage = document.getElementById('uploadedImage');
@@ -687,163 +697,302 @@ function handleEmojiKeyNavigation(e, currentOption, allOptions, currentIndex) {
 
 // 应用emoji到人脸
 async function applyEmojiToFace() {
+    if (isProcessing) return;
+
     if (!originalImage) {
-        alert('Please upload an image first.');
+        showApplyHint('Please upload an image first.');
         return;
     }
 
     if (!isModelsLoaded) {
-        alert('AI models are still loading. Please wait a moment.');
+        showApplyHint(modelLoadFailed
+            ? 'Face detection failed to load. Please reload the page.'
+            : 'Still getting ready — one moment.');
         return;
     }
 
     // 追踪用户点击添加emoji按钮事件
     if (typeof window.va === 'function') {
-        window.va('event', { 
+        window.va('event', {
             name: 'Add Emoji Click',
-            data: { 
-                emojiStyle: selectedEmojiStyle 
+            data: {
+                emojiStyle: selectedEmojiStyle
             }
         });
     }
 
-    showLoading(true);
+    beginProcessing();
 
-    // 使用setTimeout延迟耗时操作，确保UI先更新
-    setTimeout(async () => {
-        const startTime = Date.now();
-        const minDisplayTime = 3000; // 3秒
+    try {
+        setProcessingStage('detect');
+        const faces = await detectFacesAndExpressions(originalImage);
+        if (isStaleProcessing()) return;
 
-        try {
-            // 进行人脸检测
-            detectedFaces = await detectFacesAndExpressions(originalImage);
-
-            if (detectedFaces.length === 0) {
-                const elapsedTime = Date.now() - startTime;
-                const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-                setTimeout(() => {
-                    showLoading(false);
-                    alert('No faces detected in the image. Please try another photo.');
-                }, remainingTime);
-                return;
-            }
-
-            // 根据选择的样式绘制emoji
-            await drawEmojiOnFaces(originalImage, detectedFaces);
-
-            const elapsedTime = Date.now() - startTime;
-            const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-            setTimeout(() => {
-                showLoading(false);
-                document.getElementById('actionButtons').style.display = 'flex';
-                // 隐藏emoji选择器
-                const emojiSelection = document.querySelector('.emoji-selection');
-                if (emojiSelection) {
-                    emojiSelection.style.display = 'none';
-                }
-            }, remainingTime);
-
-        } catch (error) {
-            console.error('Error applying emoji:', error);
-
-            const elapsedTime = Date.now() - startTime;
-            const remainingTime = Math.max(0, minDisplayTime - elapsedTime);
-
-            setTimeout(() => {
-                showLoading(false);
-                alert('Error applying emoji. Please try again.');
-            }, remainingTime);
+        if (!faces || faces.length === 0) {
+            showProcessingError(
+                'No faces found',
+                'Try a photo with a clear, front-facing face.',
+                'Choose another photo',
+                'choose'
+            );
+            return;
         }
-    }, 50); // 延迟50毫秒，给浏览器渲染UI的时间
+
+        detectedFaces = faces;
+
+        setProcessingStage('draw');
+        await drawEmojiOnFaces(originalImage, detectedFaces);
+        if (isStaleProcessing()) return;
+
+        setProcessingStage('done');
+        // 仅当浮层真的显示过且不足 400ms 时补足，避免一闪而过；
+        // 浮层从未出现（快任务）则零额外延迟，直接结束。
+        const shownFor = processingShownAt ? Date.now() - processingShownAt : Infinity;
+        if (shownFor < 400) {
+            await wait(400 - shownFor);
+            if (isStaleProcessing()) return;
+        }
+
+        endProcessing();
+        const actionButtons = document.getElementById('actionButtons');
+        if (actionButtons) actionButtons.style.display = 'flex';
+        const emojiSelection = document.querySelector('.emoji-selection');
+        if (emojiSelection) emojiSelection.style.display = 'none';
+    } catch (error) {
+        console.error('Error applying emoji:', error);
+        if (isStaleProcessing()) return;
+        showProcessingError(
+            'Something went wrong',
+            'We could not process this photo. You can try again.',
+            'Try again',
+            'retry'
+        );
+    }
 }
 
-// 显示/隐藏加载状态
-function showLoading(show) {
-    const processingOverlay = document.getElementById('processingOverlay');
+// 处理中状态机：真实阶段 + 软取消 + 内联错误态
+const PROCESSING_STAGES = ['detect', 'draw', 'done'];
+const PROCESSING_LABELS = {
+    detect: 'Finding faces',
+    draw: 'Placing emojis',
+    done: 'Almost done'
+};
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function clearProcessingTimers() {
+    clearTimeout(processingShowTimer);
+    clearTimeout(processingSlowTimer);
+    processingShowTimer = null;
+    processingSlowTimer = null;
+}
+
+function isStaleProcessing() {
+    return processingCancelled || !isProcessing;
+}
+
+function beginProcessing() {
+    isProcessing = true;
+    processingCancelled = false;
+    const runId = ++processingRunId;
+
+    clearProcessingTimers();
+    hideProcessingError();
+    setProcessingStage('detect');
+
+    const slowNote = document.getElementById('processingSlow');
+    if (slowNote) slowNote.hidden = true;
+
+    // 延迟显示：快任务根本不出现浮层，避免闪烁
+    processingShowTimer = setTimeout(() => {
+        if (runId === processingRunId && isProcessing) showProcessing(true);
+    }, 200);
+
+    // 只有真的慢下来才提示，不做任何时间承诺
+    processingSlowTimer = setTimeout(() => {
+        if (runId === processingRunId && isProcessing) {
+            const note = document.getElementById('processingSlow');
+            if (note) note.hidden = false;
+        }
+    }, 8000);
+}
+
+function endProcessing() {
+    clearProcessingTimers();
+    processingRunId++; // 让仍在途的异步结果失效
+    isProcessing = false;
+    showProcessing(false);
+}
+
+function cancelProcessing() {
+    if (!isProcessing) return;
+    processingCancelled = true;
+    endProcessing();
+}
+
+function setProcessingStage(stage) {
+    const index = PROCESSING_STAGES.indexOf(stage);
+
+    document.querySelectorAll('.stage-chip').forEach(chip => {
+        const i = PROCESSING_STAGES.indexOf(chip.dataset.stage);
+        chip.classList.toggle('is-active', i === index);
+        chip.classList.toggle('is-done', i < index);
+        if (i === index) chip.setAttribute('aria-current', 'step');
+        else chip.removeAttribute('aria-current');
+    });
+
+    document.querySelectorAll('.stage-segment').forEach((segment, i) => {
+        segment.classList.toggle('is-active', i === index);
+        segment.classList.toggle('is-done', i < index);
+    });
+
+    const track = document.getElementById('processingTrack');
+    if (track) {
+        track.setAttribute('aria-valuenow', String(index + 1));
+        track.setAttribute('aria-valuetext', PROCESSING_LABELS[stage] || 'Working');
+    }
+
+    const heading = document.getElementById('processingHeading');
+    if (heading) heading.textContent = PROCESSING_LABELS[stage] || 'Working';
+    const live = document.getElementById('processingLive');
+    if (live) live.textContent = PROCESSING_LABELS[stage] || 'Working';
+}
+
+function hideProcessingError() {
+    const box = document.getElementById('processingError');
+    const stages = document.getElementById('processingStages');
+    const track = document.getElementById('processingTrack');
+    const note = document.getElementById('processingNote');
+    if (box) box.hidden = true;
+    if (stages) stages.hidden = false;
+    if (track) track.hidden = false;
+    if (note) note.hidden = false;
+}
+
+function showProcessingError(title, message, actionLabel, action) {
+    // 出错时浮层必须立即可见，即使 200ms 延迟还没到
+    showProcessing(true);
+    clearTimeout(processingShowTimer);
+
+    const heading = document.getElementById('processingHeading');
+    if (heading) heading.textContent = title;
+    const live = document.getElementById('processingLive');
+    if (live) live.textContent = title + '. ' + message;
+
+    const stages = document.getElementById('processingStages');
+    const track = document.getElementById('processingTrack');
+    const note = document.getElementById('processingNote');
+    const slowNote = document.getElementById('processingSlow');
+    if (stages) stages.hidden = true;
+    if (track) track.hidden = true;
+    if (note) note.hidden = true;
+    if (slowNote) slowNote.hidden = true;
+
+    const box = document.getElementById('processingError');
+    const titleEl = document.getElementById('processingErrorTitle');
+    const descEl = document.getElementById('processingErrorDesc');
+    const actionBtn = document.getElementById('processingErrorAction');
+    if (titleEl) titleEl.textContent = title;
+    if (descEl) descEl.textContent = message;
+    if (actionBtn) {
+        actionBtn.textContent = actionLabel;
+        actionBtn.onclick = () => {
+            endProcessing();
+            if (action === 'retry') applyEmojiToFace();
+            else closeImagePreview();
+        };
+    }
+    if (box) box.hidden = false;
+    if (actionBtn) actionBtn.focus();
+}
+
+function showProcessing(show) {
+    const overlay = document.getElementById('processingOverlay');
+    if (!overlay) return;
     const canvas = document.getElementById('canvas');
     const uploadedImage = document.getElementById('uploadedImage');
     const actionButtons = document.getElementById('actionButtons');
-    
+
     if (show) {
-        processingOverlay.style.display = 'flex';
-        canvas.style.display = 'none';
-        actionButtons.style.display = 'none';
-        // 保持原始图片可见，在蒙版下方
-        if (uploadedImage) {
-            uploadedImage.style.display = 'block';
+        if (overlay.style.display !== 'flex') {
+            lastFocusedElement = document.activeElement;
         }
-        // 启动进度条动画
-        startProgressAnimation();
+        const thumb = document.getElementById('processingThumb');
+        if (thumb && uploadedImage && uploadedImage.src) thumb.src = uploadedImage.src;
+
+        overlay.style.display = 'flex';
+        processingShownAt = Date.now(); // 记录真实展示时刻，用于避免浮层一闪而过
+        overlay.setAttribute('aria-busy', 'true');
+        if (canvas) canvas.style.display = 'none';
+        if (actionButtons) actionButtons.style.display = 'none';
+        if (uploadedImage) uploadedImage.style.display = 'block';
+
+        setSiblingsInert(overlay, true);
+        const cancelBtn = document.getElementById('processingCancel');
+        if (cancelBtn) cancelBtn.focus();
     } else {
-        processingOverlay.style.display = 'none';
-        // 当蒙版隐藏时，隐藏原始图片并显示处理后的canvas
-        if (processedCanvas) {
+        overlay.style.display = 'none';
+        processingShownAt = 0;
+        overlay.setAttribute('aria-busy', 'false');
+        if (processedCanvas && uploadedImage && canvas) {
             uploadedImage.style.display = 'none';
             canvas.style.display = 'block';
         }
-        // 停止进度条动画
-        stopProgressAnimation();
-    }
-}
-
-// 启动进度条动画
-function startProgressAnimation() {
-    const progressFill = document.querySelector('.progress-fill');
-    if (!progressFill) return;
-    
-    // 重置进度
-    currentProgress = 0;
-    progressFill.style.width = '0%';
-    progressFill.classList.add('processing');
-    
-    // 清除之前的定时器
-    if (progressInterval) {
-        clearInterval(progressInterval);
-    }
-    
-    // 启动进度条动画，分阶段增长
-    progressInterval = setInterval(() => {
-        if (currentProgress < 85) {
-            // 前85%比较快速增长
-            if (currentProgress < 30) {
-                currentProgress += Math.random() * 8 + 2; // 2-10%的随机增长
-            } else if (currentProgress < 60) {
-                currentProgress += Math.random() * 5 + 1; // 1-6%的随机增长
-            } else {
-                currentProgress += Math.random() * 2 + 0.5; // 0.5-2.5%的缓慢增长
-            }
-            
-            // 确保不超过85%
-            currentProgress = Math.min(currentProgress, 85);
-            progressFill.style.width = currentProgress + '%';
+        setSiblingsInert(overlay, false);
+        if (lastFocusedElement && document.contains(lastFocusedElement)) {
+            try { lastFocusedElement.focus(); } catch (e) { /* 元素可能已不可聚焦 */ }
         }
-        // 在85%后停止自动增长，等待处理完成
-    }, 200); // 每200ms更新一次
+        lastFocusedElement = null;
+    }
 }
 
-// 停止进度条动画并完成
-function stopProgressAnimation() {
-    const progressFill = document.querySelector('.progress-fill');
-    if (!progressFill) return;
-    
-    // 清除定时器
-    if (progressInterval) {
-        clearInterval(progressInterval);
-        progressInterval = null;
+function setSiblingsInert(overlay, on) {
+    const parent = overlay.parentElement;
+    if (!parent) return;
+    Array.from(parent.children).forEach(child => {
+        if (child === overlay) return;
+        if (on) {
+            child.setAttribute('inert', '');
+            child.setAttribute('aria-hidden', 'true');
+        } else {
+            child.removeAttribute('inert');
+            child.removeAttribute('aria-hidden');
+        }
+    });
+}
+
+function updateModelReadiness() {
+    const box = document.getElementById('uploadReadiness');
+    const text = document.getElementById('uploadReadinessText');
+    const applyBtn = document.getElementById('emojiApplyBtn');
+    if (!box || !text) return;
+
+    if (isModelsLoaded) {
+        box.hidden = true;
+        box.classList.remove('is-error');
+        if (applyBtn) applyBtn.disabled = false;
+    } else if (modelLoadFailed) {
+        box.hidden = false;
+        box.classList.add('is-error');
+        text.textContent = 'Face detection unavailable — please reload the page';
+        if (applyBtn) applyBtn.disabled = true;
+    } else {
+        box.hidden = false;
+        box.classList.remove('is-error');
+        text.textContent = 'Getting ready — you can pick a photo now';
+        if (applyBtn) applyBtn.disabled = true;
     }
-    
-    // 快速完成到100%
-    currentProgress = 100;
-    progressFill.style.width = '100%';
-    
-    // 500ms后移除processing类和重置
-    setTimeout(() => {
-        progressFill.classList.remove('processing');
-        currentProgress = 0;
-        progressFill.style.width = '0%';
-    }, 500);
+}
+
+function showApplyHint(message) {
+    const hint = document.getElementById('applyHint');
+    if (!hint) return;
+    hint.textContent = message;
+    hint.hidden = false;
+    clearTimeout(applyHintTimer);
+    applyHintTimer = setTimeout(() => { hint.hidden = true; }, 4000);
 }
 
 // 下载处理后的图片
@@ -1499,6 +1648,13 @@ function handleCanvasClick(event) {
 
 // 处理键盘按下事件
 function handleKeyDown(event) {
+    // 处理中优先响应 Esc：取消当前任务，而不是关闭整个预览
+    if (event.key === 'Escape' && isProcessing) {
+        event.preventDefault();
+        cancelProcessing();
+        return;
+    }
+
     if (selectedEmoji && (event.key === 'Delete' || event.key === 'Backspace')) {
         const index = drawnEmojis.indexOf(selectedEmoji);
         if (index > -1) {

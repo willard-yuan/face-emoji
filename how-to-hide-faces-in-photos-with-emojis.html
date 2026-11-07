@@ -98,7 +98,7 @@
     }
     </script>
 </head>
-<body>
+<body class="article-page">
     <header class="header" role="banner">
         <div class="container header-container">
             <div class="logo">
@@ -112,7 +112,7 @@
                     <a href="index.html#features" itemprop="url">Features</a>
                     <a href="index.html#how-it-works" itemprop="url">How It Works</a>
                     <a href="index.html#faq" itemprop="url">FAQ</a>
-                    <a href="blog.html" itemprop="url">Blog</a>
+                    <a href="blog.html" itemprop="url" class="nav-current" aria-current="page">Blog</a>
                     <a href="other-tools.html" itemprop="url">Other Tools</a>
                     <a href="changelog.html" itemprop="url">Changelog</a>
                 </nav>
@@ -125,7 +125,7 @@
                 <a href="index.html#features" role="menuitem">Features</a>
                 <a href="index.html#how-it-works" role="menuitem">How It Works</a>
                 <a href="index.html#faq" role="menuitem">FAQ</a>
-                <a href="blog.html" role="menuitem">Blog</a>
+                <a href="blog.html" role="menuitem" class="nav-current" aria-current="page">Blog</a>
                 <a href="other-tools.html" role="menuitem">Other Tools</a>
                 <a href="changelog.html" role="menuitem">Changelog</a>
             </div>
@@ -133,36 +133,38 @@
     </header>
     
     <main role="main" id="main-content">
-        <!-- Article Header -->
         <section class="article-header">
             <div class="container">
                 <nav class="breadcrumb" aria-label="Breadcrumb">
-                    <a href="index.html">Home</a><a href="blog.html">Blog</a><span>How to Hide Faces in Photos with Emojis</span>
+                    <ol>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="blog.html">Blog</a></li>
+                        <li><span aria-current="page">How to Hide Faces in Photos with Emojis</span></li>
+                    </ol>
                 </nav>
                 <div class="article-header-content">
                     <h1 class="article-main-title">How to Hide Faces in Photos with Emojis: The Ultimate Guide</h1>
                     <div class="article-meta">
-                        <span class="article-date">📅 August 10, 2025</span>
-                        <span class="article-read-time">⏱️ 5 min read</span>
-                        <span class="article-author">👤 EmojiFace Team</span>
+                        <time class="article-date" datetime="2025-08-10">Aug 10, 2025</time>
+                        <span class="meta-sep" aria-hidden="true">·</span>
+                        <span class="article-read-time"><svg class="meta-icon" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.6V8l2.4 1.4"/></svg>5 min read</span>
+                        <span class="meta-sep" aria-hidden="true">·</span>
+                        <span class="article-author">By EmojiFace Team</span>
                     </div>
                     <div class="article-tags">
                         <span class="tag">Privacy Protection</span>
                         <span class="tag">Emoji Masking</span>
                         <span class="tag">Face Hiding</span>
-                        <span class="tag">AI Technology</span>
-                        <span class="tag">Photo Editing</span>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Article Content -->
         <article class="article-content">
             <div class="container">
                 <div class="article-image-hero">
-                    <img src="public/images/emojiface.dot_demo.gif" alt="EmojiFace.us demo showing instant face hiding with emojis" />
-                    <p class="image-caption">See how EmojiFace.us instantly hides faces with cute emojis in just one click</p>
+                    <img src="public/images/emojiface.dot_demo.gif" alt="EmojiFace.us before and after demo: faces in a group photo covered with emoji in one click" decoding="async" fetchpriority="high" />
+                    <p class="image-caption">See how EmojiFace.us instantly hides every face with cute emojis in just one click.</p>
                 </div>
 
                 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4184498324686509"
