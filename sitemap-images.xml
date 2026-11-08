@@ -165,4 +165,47 @@
       <image:license>https://EmojiFace.US</image:license>
     </image:image>
   </url>
+
+  <url>
+    <loc>https://EmojiFace.US/result.html</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/emojified-photo2.webp</image:loc>
+      <image:title>Emoji face photo result - save and download</image:title>
+      <image:caption>Example emoji face photo result with Labubu emoji masks, ready to save as a full-resolution PNG.</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://EmojiFace.US/how-to-hide-face-in-video-online-free.html</loc>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/video-face-before-after.webp</image:loc>
+      <image:title>Video face masking before and after comparison</image:title>
+      <image:caption>Four children jumping outdoors with visible faces, and the same frame with star-struck emoji covering every detected face.</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/video-face-emoji-og.webp</image:loc>
+      <image:title>Emoji masks tracking faces in a video clip</image:title>
+      <image:caption>Result frame from the video face masking demo, used as the article social share image.</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/demo-face-poster.webp</image:loc>
+      <image:title>Original video clip poster frame</image:title>
+      <image:caption>Poster frame for the before video: four children jumping on a grass field with faces visible.</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://EmojiFace.US/public/images/demo-face-result-poster.webp</image:loc>
+      <image:title>Processed video clip poster frame</image:title>
+      <image:caption>Poster frame for the after video: star-struck emoji masks covering each moving face.</image:caption>
+      <image:geo_location>Worldwide</image:geo_location>
+      <image:license>https://EmojiFace.US</image:license>
+    </image:image>
+  </url>
 </urlset>

@@ -3,6 +3,10 @@ let isModelsLoaded = false;
 let originalImage = null;
 let processedCanvas = null;
 let selectedEmojiStyle = 'random_labubu';
+// Plan A：选中精确表情时保存其文件名，智能模式下为空字符串。
+let selectedEmojiPreset = '';
+// 人类可读的选中项名称，随结果一起传给 result.html 展示。
+let selectedEmojiLabel = 'Auto Labubu';
 let detectedFaces = null;
 let drawnEmojis = [];
 let selectedEmoji = null;
@@ -412,8 +416,11 @@ function drawEmojiForDetection(ctx, detection) {
     return new Promise((resolve) => {
         let emojiName = 'neutral';
         
+        // 精确表情优先；文件名来自静态 DOM，只允许安全字符，避免路径注入。
+        if (selectedEmojiStyle === 'preset' && /^[a-zA-Z0-9_-]+$/.test(selectedEmojiPreset)) {
+            emojiName = selectedEmojiPreset;
         // 根据选择的样式决定emoji
-        if (selectedEmojiStyle === 'auto') {
+        } else if (selectedEmojiStyle === 'auto') {
             // AI自动选择：获取最高分数的表情
             const expressions = detection.expressions;
             let maxScore = 0;
@@ -478,12 +485,11 @@ function drawEmojiForDetection(ctx, detection) {
 
 // 根据样式获取emoji名称
 function getEmojiByStyle(style) {
+    // labubu / random_labubu 已在调用处单独处理，这里只保留旧的通用样式映射。
     const styleMap = {
         'happy': 'blush',
         'funny': 'stuck_out_tongue_winking_eye',
-        'cool': 'sunglasses',
-        'labubu': 'happy_labubu',
-        'random_labubu': 'random_labubu'
+        'cool': 'sunglasses'
     };
     
     return styleMap[style] || 'neutral';
@@ -639,63 +645,151 @@ async function loadSampleImage(imagePath) {
     }
 }
 
-// 设置emoji选择器
-function setupEmojiSelection() {
-    const emojiOptions = document.querySelectorAll('.emoji-option');
-    
-    emojiOptions.forEach((option, index) => {
-        option.addEventListener('click', () => {
-            selectEmojiOption(option, emojiOptions);
-        });
-        
-        option.addEventListener('keydown', (e) => {
-            handleEmojiKeyNavigation(e, option, emojiOptions, index);
-        });
-    });
+// 设置emoji选择器（Plan A：3 个智能模式 + 3 组紧凑精确表情网格）
+function getEmojiOptions() {
+    return Array.from(document.querySelectorAll('.emoji-chooser [data-style]'));
 }
 
-function selectEmojiOption(selectedOption, allOptions) {
-    // 移除所有active类和更新ARIA属性
+function getEmojiOptionLabel(option) {
+    // aria-label 已经是给用户看的名字；智能模式带破折号说明，只取前半段。
+    const label = option.getAttribute('aria-label') || '';
+    return label.split('—')[0].trim() || option.getAttribute('data-emoji') || 'Emoji';
+}
+
+function setupEmojiSelection() {
+    const chooser = document.getElementById('emojiChooser');
+    if (!chooser) return;
+
+    const options = getEmojiOptions();
+    options.forEach(option => {
+        option.addEventListener('click', () => selectEmojiOption(option, options));
+        option.addEventListener('keydown', e => handleEmojiKeyNavigation(e, option, options));
+    });
+
+    // 显式同步一次，保证 HTML 默认态、全局变量与「Selected」行三者一致。
+    const initial = chooser.querySelector('.emoji-mode.active, .emoji-tile.active') || options[0];
+    if (initial) selectEmojiOption(initial, options, false);
+}
+
+function selectEmojiOption(selectedOption, allOptions, announce = true) {
+    // 模式和所有精确表情共用一个 radiogroup，跨组互斥。
     allOptions.forEach(opt => {
         opt.classList.remove('active');
         opt.setAttribute('aria-checked', 'false');
         opt.setAttribute('tabindex', '-1');
     });
-    
-    // 添加active类到当前选项并更新ARIA属性
+
     selectedOption.classList.add('active');
     selectedOption.setAttribute('aria-checked', 'true');
     selectedOption.setAttribute('tabindex', '0');
-    
-    // 更新选中的emoji样式
-    selectedEmojiStyle = selectedOption.getAttribute('data-style');
+
+    selectedEmojiStyle = selectedOption.getAttribute('data-style') || 'random_labubu';
+    selectedEmojiPreset = selectedEmojiStyle === 'preset'
+        ? (selectedOption.getAttribute('data-emoji') || '')
+        : '';
+    selectedEmojiLabel = getEmojiOptionLabel(selectedOption);
+
+    const label = document.getElementById('emojiSelectedLabel');
+    if (label) label.textContent = 'Selected: ' + selectedEmojiLabel;
+
+    if (announce && typeof window.va === 'function') {
+        window.va('event', {
+            name: 'Emoji Style Selected',
+            data: {
+                emojiStyle: selectedEmojiStyle,
+                emojiPreset: selectedEmojiPreset
+            }
+        });
+    }
 }
 
-function handleEmojiKeyNavigation(e, currentOption, allOptions, currentIndex) {
-    let newIndex = currentIndex;
-    
-    switch(e.key) {
-        case 'ArrowDown':
-        case 'ArrowRight':
-            e.preventDefault();
-            newIndex = (currentIndex + 1) % allOptions.length;
-            break;
-        case 'ArrowUp':
-        case 'ArrowLeft':
-            e.preventDefault();
-            newIndex = (currentIndex - 1 + allOptions.length) % allOptions.length;
-            break;
-        case 'Enter':
-        case ' ':
-            e.preventDefault();
-            selectEmojiOption(currentOption, allOptions);
-            return;
-        default:
-            return;
+function moveEmojiFocus(target, allOptions) {
+    if (!target) return;
+    allOptions.forEach(opt => opt.setAttribute('tabindex', '-1'));
+    target.setAttribute('tabindex', '0');
+    target.focus();
+}
+
+// 用实际布局推算列数，响应式下键盘上下移动才能对齐视觉行。
+function gridColumnCount(grid) {
+    const tiles = Array.from(grid.querySelectorAll('.emoji-tile'));
+    if (tiles.length < 2) return tiles.length || 1;
+    const firstTop = tiles[0].getBoundingClientRect().top;
+    let cols = 0;
+    for (const tile of tiles) {
+        if (Math.abs(tile.getBoundingClientRect().top - firstTop) > 2) break;
+        cols++;
     }
-    
-    // 移动焦点到新选项
-    allOptions[newIndex].focus();
+    return Math.max(1, cols);
+}
+
+function handleEmojiKeyNavigation(e, currentOption, allOptions) {
+    if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectEmojiOption(currentOption, allOptions);
+        return;
+    }
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) === -1) return;
+    e.preventDefault();
+
+    const modes = Array.from(document.querySelectorAll('.emoji-chooser .emoji-mode'));
+    const grids = Array.from(document.querySelectorAll('.emoji-chooser .emoji-grid'));
+    const globalIndex = allOptions.indexOf(currentOption);
+
+    // 智能模式行：左右在行内循环，向下进入第一组精确表情。
+    if (!currentOption.classList.contains('emoji-tile')) {
+        const index = modes.indexOf(currentOption);
+        if (e.key === 'ArrowLeft') {
+            moveEmojiFocus(modes[(index - 1 + modes.length) % modes.length], allOptions);
+        } else if (e.key === 'ArrowRight') {
+            moveEmojiFocus(modes[(index + 1) % modes.length], allOptions);
+        } else if (e.key === 'ArrowDown') {
+            const firstTiles = grids.length
+                ? Array.from(grids[0].querySelectorAll('.emoji-tile')) : [];
+            moveEmojiFocus(firstTiles[Math.min(index, firstTiles.length - 1)], allOptions);
+        } else {
+            moveEmojiFocus(allOptions[allOptions.length - 1], allOptions);
+        }
+        return;
+    }
+
+    const grid = currentOption.closest('.emoji-grid');
+    const tiles = Array.from(grid.querySelectorAll('.emoji-tile'));
+    const pos = tiles.indexOf(currentOption);
+    const cols = gridColumnCount(grid);
+    const gridIndex = grids.indexOf(grid);
+
+    // 左右按 DOM 顺序连续移动，可自然跨到相邻分组。
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        const next = globalIndex + (e.key === 'ArrowRight' ? 1 : -1);
+        moveEmojiFocus(allOptions[(next + allOptions.length) % allOptions.length], allOptions);
+        return;
+    }
+
+    if (e.key === 'ArrowUp') {
+        if (pos - cols >= 0) {
+            moveEmojiFocus(tiles[pos - cols], allOptions);
+        } else if (gridIndex > 0) {
+            const prevGrid = grids[gridIndex - 1];
+            const prevTiles = Array.from(prevGrid.querySelectorAll('.emoji-tile'));
+            const prevCols = gridColumnCount(prevGrid);
+            const lastRowStart = Math.floor((prevTiles.length - 1) / prevCols) * prevCols;
+            moveEmojiFocus(prevTiles[Math.min(lastRowStart + (pos % cols), prevTiles.length - 1)], allOptions);
+        } else {
+            moveEmojiFocus(modes[Math.min(pos % cols, modes.length - 1)], allOptions);
+        }
+        return;
+    }
+
+    // ArrowDown：跨出当前网格时落到下一组同一列，最后一组回到模式行。
+    if (pos + cols < tiles.length) {
+        moveEmojiFocus(tiles[pos + cols], allOptions);
+    } else if (gridIndex < grids.length - 1) {
+        const nextTiles = Array.from(grids[gridIndex + 1].querySelectorAll('.emoji-tile'));
+        moveEmojiFocus(nextTiles[Math.min(pos % cols, nextTiles.length - 1)], allOptions);
+    } else {
+        moveEmojiFocus(modes[0], allOptions);
+    }
 }
 
 // 应用emoji到人脸
@@ -719,7 +813,8 @@ async function applyEmojiToFace() {
         window.va('event', {
             name: 'Add Emoji Click',
             data: {
-                emojiStyle: selectedEmojiStyle
+                emojiStyle: selectedEmojiStyle,
+                emojiPreset: selectedEmojiPreset
             }
         });
     }
@@ -757,8 +852,20 @@ async function applyEmojiToFace() {
         }
 
         endProcessing();
+
+        // 默认把结果放到独立、可索引的 result.html；存储或跳转失败时
+        // 自动退回原来的同页结果，保证主流程不中断。
+        if (!isClassicResultMode()) {
+            try {
+                if (await openResultPage()) return;
+            } catch (error) {
+                reportHandoffFailure('unexpected-error', error);
+            }
+        }
+
         const actionButtons = document.getElementById('actionButtons');
         if (actionButtons) actionButtons.style.display = 'flex';
+        showResultPageFallbackLink();
         const emojiSelection = document.querySelector('.emoji-selection');
         if (emojiSelection) emojiSelection.style.display = 'none';
     } catch (error) {
@@ -998,6 +1105,137 @@ function showApplyHint(message) {
     applyHintTimer = setTimeout(() => { hint.hidden = true; }, 4000);
 }
 
+// 合成「干净」的结果画布：只含原图 + emoji，不含编辑控件。
+// 下载按钮与结果页共用，避免两处绘制逻辑不一致。
+function buildExportCanvas() {
+    if (!processedCanvas || !originalImage) return null;
+
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = processedCanvas.width;
+    exportCanvas.height = processedCanvas.height;
+    const exportCtx = exportCanvas.getContext('2d');
+    exportCtx.drawImage(originalImage, 0, 0);
+    drawnEmojis.forEach(emoji => {
+        exportCtx.save();
+        exportCtx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
+        exportCtx.rotate(emoji.angle);
+        exportCtx.drawImage(emoji.img, -emoji.width / 2, -emoji.height / 2, emoji.width, emoji.height);
+        exportCtx.restore();
+    });
+    return exportCanvas;
+}
+
+// 结果页模式：把结果以 Blob 存到本地，然后在当前标签跳转。
+// 图片始终留在设备里，延续 "Your photo stays on this device" 的隐私承诺。
+// 回滚开关：localStorage.setItem('emojiResultMode', 'classic')
+function reportHandoffFailure(reason, error) {
+    console.warn('[EmojiFace] Result page hand-off unavailable: ' + reason + '. Showing the inline result instead.', error || '');
+    try {
+        if (typeof window.va === 'function') {
+            window.va('event', { name: 'Result Handoff Failed', data: { reason: reason } });
+        }
+    } catch (e) { /* analytics must never break the flow */ }
+}
+
+// 旧标签页 / 启发式缓存可能让页面仍跑着旧版 index.html（没有 result-store.js），
+// 或该脚本被扩展 / 网络拦截。此时补载一次，避免静默退回同页结果。
+function ensureResultStore() {
+    if (window.EmojiResultStore) return Promise.resolve(true);
+    return new Promise(resolve => {
+        const script = document.createElement('script');
+        script.src = 'result-store.js?v=20261108c';
+        script.onload = () => resolve(Boolean(window.EmojiResultStore));
+        script.onerror = () => resolve(false);
+        document.head.appendChild(script);
+    });
+}
+
+// hand-off 失败时仍给用户一个进入结果页的入口，避免第二次 page_view 全丢。
+function showResultPageFallbackLink() {
+    const box = document.getElementById('actionButtons');
+    if (!box || document.getElementById('resultPageFallbackLink')) return;
+    const link = document.createElement('a');
+    link.id = 'resultPageFallbackLink';
+    link.className = 'btn';
+    link.href = 'result.html';
+    link.textContent = 'Save & edit guide';
+    link.setAttribute('aria-label', 'Open the result page with save and edit instructions');
+    box.appendChild(link);
+}
+
+async function openResultPage() {
+    const exportCanvas = buildExportCanvas();
+    if (!exportCanvas) {
+        reportHandoffFailure('no-export-canvas');
+        return false;
+    }
+
+    const resultBlob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/png'));
+    if (!resultBlob) {
+        reportHandoffFailure('canvas-toblob-null');
+        return false;
+    }
+    if (!await ensureResultStore()) {
+        reportHandoffFailure('result-store-unavailable');
+        return false;
+    }
+
+    // 原图用作结果页可编辑画布的底图与 before/after 对比。
+    // 用离屏 canvas 重绘而非 fetch(originalImage.src)：blob:/data: URL、
+    // 缓存策略与 CORS 都不会让这一步失败。
+    let originalBlob = null;
+    try {
+        if (originalImage) {
+            const originalCanvas = document.createElement('canvas');
+            originalCanvas.width = originalImage.naturalWidth || originalImage.width;
+            originalCanvas.height = originalImage.naturalHeight || originalImage.height;
+            originalCanvas.getContext('2d').drawImage(originalImage, 0, 0);
+            originalBlob = await new Promise(resolve => originalCanvas.toBlob(resolve, 'image/png'));
+        }
+    } catch (e) { /* optional */ }
+
+    // 把每个 emoji 图层序列化，结果页据此重建可拖拽 / 缩放 / 旋转 / 删除的编辑态。
+    const emojis = drawnEmojis.map(emoji => ({
+        src: emoji.img.src,
+        x: emoji.x,
+        y: emoji.y,
+        width: emoji.width,
+        height: emoji.height,
+        angle: emoji.angle
+    }));
+
+    try {
+        await window.EmojiResultStore.saveResult({
+            resultBlob: resultBlob,
+            originalBlob: originalBlob,
+            style: selectedEmojiStyle,
+            styleLabel: selectedEmojiLabel,
+            preset: selectedEmojiPreset,
+            faces: detectedFaces ? detectedFaces.length : 0,
+            width: exportCanvas.width,
+            height: exportCanvas.height,
+            emojis: emojis
+        });
+    } catch (error) {
+        // 隐私模式 / IndexedDB 被禁用 / 存储配额不足：保留同页结果，不打断用户。
+        reportHandoffFailure('indexeddb-write-failed', error);
+        return false;
+    }
+
+    window.location.assign('result.html');
+    return true;
+}
+
+function isClassicResultMode() {
+    try {
+        const classic = localStorage.getItem('emojiResultMode') === 'classic';
+        if (classic) {
+            console.info('[EmojiFace] Classic inline result mode is active. Run localStorage.removeItem(\'emojiResultMode\') to restore the result page.');
+        }
+        return classic;
+    } catch (e) { return false; }
+}
+
 // 下载处理后的图片
 function downloadImage() {
     if (!processedCanvas || !originalImage) {
@@ -1011,26 +1249,14 @@ function downloadImage() {
             name: 'Download Photo',
             data: { 
                 emojiStyle: selectedEmojiStyle,
+                emojiPreset: selectedEmojiPreset,
                 facesDetected: detectedFaces ? detectedFaces.length : 0
             }
         });
     }
     
     // 使用离屏画布导出，避免包含编辑控件
-    const exportCanvas = document.createElement('canvas');
-    exportCanvas.width = processedCanvas.width;
-    exportCanvas.height = processedCanvas.height;
-    const exportCtx = exportCanvas.getContext('2d');
-    // 绘制原始图片
-    exportCtx.drawImage(originalImage, 0, 0);
-    // 绘制所有emoji（不绘制任何控件）
-    drawnEmojis.forEach(emoji => {
-        exportCtx.save();
-        exportCtx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
-        exportCtx.rotate(emoji.angle);
-        exportCtx.drawImage(emoji.img, -emoji.width / 2, -emoji.height / 2, emoji.width, emoji.height);
-        exportCtx.restore();
-    });
+    const exportCanvas = buildExportCanvas();
 
     // 创建下载链接（基于离屏画布）
     const link = document.createElement('a');

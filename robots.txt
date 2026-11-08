@@ -6,10 +6,19 @@ Disallow: /temp/
 Disallow: /cache/
 Disallow: /*.json$
 Disallow: /*?*
+# Cache-busted JS is a real page resource, not a duplicate content URL.
+# Longest-match rules below override the generic /*?* block for other crawlers.
+Allow: /styles.css?*
+Allow: /app.js?*
+Allow: /result-store.js?*
+Allow: /result.js?*
+Allow: /emoji-editor.js?*
 Allow: /public/
 Allow: /blog.html
+Allow: /result.html
 Allow: /mask-face-labubu-emoji.html
 Allow: /how-to-mask-face-using-emojiface-dot-us.html
+Allow: /how-to-hide-face-in-video-online-free.html
 Allow: /ads.txt
 Allow: /app-ads.txt
 

@@ -58,11 +58,11 @@
         <!-- PWA manifest and Safari pinned tab -->
         <link rel="manifest" href="manifest.webmanifest">
         <link rel="mask-icon" href="public/safari-pinned-tab.svg" color="#6C47FF">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261108c">
     <link rel="stylesheet" href="seo-optimization.css">
     
     <!-- Preload critical resources for better performance -->
-    <link rel="preload" href="styles.css" as="style">
+    <link rel="preload" href="styles.css?v=20261108c" as="style">
     <link rel="preload" href="seo-optimization.css" as="style">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js" as="script" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -547,74 +547,77 @@
                         </div>
                     </div>
                     
-                    <!-- Emoji Style Selection -->
+                    <!-- Emoji Style Selection: smart modes + compact exact-emoji grids (Plan A) -->
                     <div class="emoji-selection" role="region" aria-labelledby="emoji-selection-header">
                         <div class="emoji-selection-header" id="emoji-selection-header">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg>
                             <span>Choose Emoji Style</span>
                         </div>
-                        
-                        <div class="emoji-options" role="radiogroup" aria-labelledby="emoji-selection-header">
+                        <p class="emoji-selection-sub">Pick a smart mode, or choose an exact emoji to cover every detected face. Your photo stays on this device.</p>
 
-                            <div class="emoji-option active" data-style="random_labubu" role="radio" aria-checked="true" tabindex="0" aria-describedby="auto-labubu-desc">
-                                <div class="emoji-icon" aria-hidden="true">
-                                    <img src="./public/emojis/labubu_emoji4.png" alt="Labubu emoji character for auto selection option" style="width: 24px; border-radius: 4px;">
-                                </div>
+                        <div class="emoji-chooser" id="emojiChooser" role="radiogroup" aria-labelledby="emoji-selection-header">
 
-                                <div class="emoji-label">
-                                    <strong>Auto Labubu</strong>
-                                    <span id="auto-labubu-desc">Auto select from Labubu collection</span>
+                            <div class="emoji-mode-row" aria-label="Smart modes">
+                                <button type="button" class="emoji-mode active" data-style="random_labubu" role="radio" aria-checked="true" tabindex="0" aria-label="Auto Labubu — auto select from the Labubu collection" title="Auto select from the Labubu collection"><img src="./public/emojis/labubu_emoji4.png" alt="" width="20" height="20">Auto Labubu</button>
+                                <button type="button" class="emoji-mode" data-style="auto" role="radio" aria-checked="false" tabindex="-1" aria-label="Auto Emoji — let AI choose the best emoji" title="Let AI choose the best emoji"><span class="emoji-mode-glyph" aria-hidden="true">&#10022;</span>Auto Emoji</button>
+                                <button type="button" class="emoji-mode" data-style="labubu" role="radio" aria-checked="false" tabindex="-1" aria-label="Happy Labubu — use a happy Labubu emoji" title="Use a happy Labubu emoji"><img src="./public/emojis/labubu_emoji2.png" alt="" width="20" height="20">Happy Labubu</button>
+                            </div>
+
+                            <div class="emoji-group">
+                                <p class="emoji-group-title">Labubu</p>
+                                <div class="emoji-grid">
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu" title="Labubu"><img src="./public/emojis/labubu_emoji.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji1" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 1" title="Labubu 1"><img src="./public/emojis/labubu_emoji1.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji2" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 2" title="Labubu 2"><img src="./public/emojis/labubu_emoji2.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji3" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 3" title="Labubu 3"><img src="./public/emojis/labubu_emoji3.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji4" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 4" title="Labubu 4"><img src="./public/emojis/labubu_emoji4.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji5" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 5" title="Labubu 5"><img src="./public/emojis/labubu_emoji5.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji6" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 6" title="Labubu 6"><img src="./public/emojis/labubu_emoji6.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji7" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 7" title="Labubu 7"><img src="./public/emojis/labubu_emoji7.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji8" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 8" title="Labubu 8"><img src="./public/emojis/labubu_emoji8.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji9" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 9" title="Labubu 9"><img src="./public/emojis/labubu_emoji9.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji10" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 10" title="Labubu 10"><img src="./public/emojis/labubu_emoji10.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="labubu_emoji11" role="radio" aria-checked="false" tabindex="-1" aria-label="Labubu 11" title="Labubu 11"><img src="./public/emojis/labubu_emoji11.png" alt="" width="34" height="34" decoding="async"></button>
                                 </div>
                             </div>
 
-                            <div class="emoji-option" data-style="auto" role="radio" aria-checked="false" tabindex="-1" aria-describedby="auto-emoji-desc">
-                                <div class="emoji-icon" aria-hidden="true">🤖</div>
-                                <div class="emoji-label">
-                                    <strong>Auto Emoji</strong>
-                                    <span id="auto-emoji-desc">Let AI choose the best emoji</span>
+                            <div class="emoji-group">
+                                <p class="emoji-group-title">Classic faces</p>
+                                <div class="emoji-grid">
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="blush" role="radio" aria-checked="false" tabindex="-1" aria-label="Blush" title="Blush"><img src="./public/emojis/blush.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="happy" role="radio" aria-checked="false" tabindex="-1" aria-label="Happy" title="Happy"><img src="./public/emojis/happy.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="sunglasses" role="radio" aria-checked="false" tabindex="-1" aria-label="Cool" title="Cool"><img src="./public/emojis/sunglasses.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="stuck_out_tongue_winking_eye" role="radio" aria-checked="false" tabindex="-1" aria-label="Silly" title="Silly"><img src="./public/emojis/stuck_out_tongue_winking_eye.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="cat" role="radio" aria-checked="false" tabindex="-1" aria-label="Cat" title="Cat"><img src="./public/emojis/cat.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="surprised" role="radio" aria-checked="false" tabindex="-1" aria-label="Surprised" title="Surprised"><img src="./public/emojis/surprised.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="angry" role="radio" aria-checked="false" tabindex="-1" aria-label="Angry" title="Angry"><img src="./public/emojis/angry.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="neutral" role="radio" aria-checked="false" tabindex="-1" aria-label="Neutral" title="Neutral"><img src="./public/emojis/neutral.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="sad" role="radio" aria-checked="false" tabindex="-1" aria-label="Sad" title="Sad"><img src="./public/emojis/sad.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="fearful" role="radio" aria-checked="false" tabindex="-1" aria-label="Fearful" title="Fearful"><img src="./public/emojis/fearful.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="disgusted" role="radio" aria-checked="false" tabindex="-1" aria-label="Disgusted" title="Disgusted"><img src="./public/emojis/disgusted.png" alt="" width="34" height="34" decoding="async"></button>
                                 </div>
                             </div>
 
-                            <div class="emoji-option" data-style="labubu" role="radio" aria-checked="false" tabindex="-1" aria-describedby="happy-labubu-desc">
-                                <div class="emoji-icon" aria-hidden="true">
-                                    <img src="./public/emojis/labubu_emoji2.png" alt="Happy Labubu emoji character option" style="width: 24px; border-radius: 4px;">
-                                </div>
-                                <div class="emoji-label">
-                                    <strong>Happy Labubu</strong>
-                                    <span id="happy-labubu-desc">Use Happy Labubu emoji</span>
-                                </div>
-                            </div>
-                            
-
-                            
-                            <div class="emoji-option" data-style="happy" role="radio" aria-checked="false" tabindex="-1" aria-describedby="happy-emoji-desc">
-                                <div class="emoji-icon" aria-hidden="true">😊</div>
-                                <div class="emoji-label">
-                                    <strong>Happy Emoji</strong>
-                                    <span id="happy-emoji-desc">Always use happy faces</span>
+                            <div class="emoji-group">
+                                <p class="emoji-group-title">Fun &amp; love</p>
+                                <div class="emoji-grid">
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="heart_eyes_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Heart eyes" title="Heart eyes"><img src="./public/emojis/heart_eyes_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="kissing_heart_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Kissing heart" title="Kissing heart"><img src="./public/emojis/kissing_heart_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="wink_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Wink" title="Wink"><img src="./public/emojis/wink_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="zany_face_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Zany face" title="Zany face"><img src="./public/emojis/zany_face_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="woozy_face_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Woozy face" title="Woozy face"><img src="./public/emojis/woozy_face_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="face_with_spiral_eyes_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Spiral eyes" title="Spiral eyes"><img src="./public/emojis/face_with_spiral_eyes_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="partying_face_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Partying face" title="Partying face"><img src="./public/emojis/partying_face_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="star-struck_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Star struck" title="Star struck"><img src="./public/emojis/star-struck_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="heart_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Blue heart" title="Blue heart"><img src="./public/emojis/heart_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="pink_heart_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Pink heart" title="Pink heart"><img src="./public/emojis/pink_heart_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="yellow_heart_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Yellow heart" title="Yellow heart"><img src="./public/emojis/yellow_heart_256x256.png" alt="" width="34" height="34" decoding="async"></button>
+                                    <button type="button" class="emoji-tile" data-style="preset" data-emoji="cherry_blossom_256x256" role="radio" aria-checked="false" tabindex="-1" aria-label="Cherry blossom" title="Cherry blossom"><img src="./public/emojis/cherry_blossom_256x256.png" alt="" width="34" height="34" decoding="async"></button>
                                 </div>
                             </div>
-                            
-                            <div class="emoji-option" data-style="funny" role="radio" aria-checked="false" tabindex="-1" aria-describedby="funny-emoji-desc">
-                                <div class="emoji-icon" aria-hidden="true">😜</div>
-                                <div class="emoji-label">
-                                    <strong>Funny Emoji</strong>
-                                    <span id="funny-emoji-desc">Use funny and silly emojis</span>
-                                </div>
-                            </div>
-                            
-                            <div class="emoji-option" data-style="cool" role="radio" aria-checked="false" tabindex="-1" aria-describedby="cool-emoji-desc">
-                                <div class="emoji-icon" aria-hidden="true">😎</div>
-                                <div class="emoji-label">
-                                    <strong>Cool Emoji</strong>
-                                    <span id="cool-emoji-desc">Use cool and stylish emojis</span>
-                                </div>
-                            </div>
-                            
-
-
                         </div>
-                        
+
+                        <p class="emoji-selected" id="emojiSelectedLabel" role="status">Selected: Auto Labubu</p>
                         <button class="btn emoji-apply-btn" id="emojiApplyBtn" onclick="applyEmojiToFace()" aria-label="Apply selected emoji style to detected faces in the uploaded photo">Click to add Emoji to Face</button>
                         <p class="apply-hint" id="applyHint" role="status" hidden></p>
                     </div>
@@ -881,7 +884,7 @@
                                 <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-help-circle"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d="M12 17h.01"></path></svg>
                             </div>
                             <div class="faq-answer">
-                                <p>You can download your emojified photos and use them for social media profiles, sharing with friends, creating fun content for your brand, or any personal use. The transformed images are perfect for standing out on platforms like Instagram, Twitter, and Facebook.</p>
+                                <p>You can download your emojified photos and use them for social media profiles, sharing with friends, creating fun content for your brand, or any personal use. The transformed images are perfect for standing out on platforms like Instagram, Twitter, and Facebook. <a href="result.html">See an example result and our save &amp; edit guide</a> for a step-by-step walkthrough.</p>
                             </div>
                         </div>
                         
@@ -971,8 +974,9 @@
         </footer>
 
     <!-- Critical scripts loaded first -->
+    <script src="result-store.js?v=20261108c"></script>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=20261108c"></script>
     
     <!-- Non-critical scripts loaded after page load -->
     <script>
