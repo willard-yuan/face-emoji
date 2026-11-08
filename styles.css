@@ -1222,8 +1222,11 @@ main {
     transform: none;
 }
 
-/* Sample Images Section */
+/* Sample Images Section — right-to-left infinite marquee */
 .sample-images-section {
+    --sample-w: 180px;
+    --sample-gap: 15px;
+    --marquee-duration: 34s;
     margin-top: 30px;
     padding-top: 25px;
     border-top: 1px solid #eee;
@@ -1237,14 +1240,53 @@ main {
     font-weight: 500;
 }
 
-.sample-images-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 15px;
+/* Two identical groups live in the HTML, so translating by -50% lands
+   exactly back on the first group: seamless, with no JS dependency. */
+.sample-images-viewport {
+    overflow: hidden;
     margin-bottom: 10px;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 5%, #000 95%, transparent 100%);
+}
+
+.sample-images-track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    /* Always running: no .is-ready gate, no JS, no hover pause. */
+    animation: sample-images-marquee var(--marquee-duration) linear infinite;
+}
+
+.sample-images-group {
+    display: flex;
+    flex: 0 0 auto;
+    gap: var(--sample-gap);
+    /* the seam between the two groups must equal an ordinary item gap */
+    padding-right: var(--sample-gap);
+}
+
+@keyframes sample-images-marquee {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
+}
+
+/* Only a keyboard focus pauses the row (so a focused photo cannot drift away
+   before Enter is pressed). Mouse hover deliberately does NOT pause: the row
+   must always look like it is auto-scrolling, and at ~34px/s a 180px photo
+   stays under the cursor for ~5s, which is plenty of time to click it. */
+.sample-images-viewport:focus-within .sample-images-track {
+    animation-play-state: paused;
 }
 
 .sample-image {
+    flex: 0 0 auto;
+    width: var(--sample-w);
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    line-height: 0;
+    -webkit-tap-highlight-color: transparent;
     cursor: pointer;
     border-radius: 12px;
     overflow: hidden;
@@ -1262,6 +1304,11 @@ main {
                 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
+.sample-image:focus-visible {
+    outline: 3px solid #6c47ff;
+    outline-offset: 3px;
+}
+
 .sample-image img {
     width: 100%;
     height: auto;
@@ -1272,9 +1319,10 @@ main {
 
 /* Responsive adjustments for sample images */
 @media (max-width: 768px) {
-    .sample-images-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+    .sample-images-section {
+        --sample-w: 150px;
+        --sample-gap: 12px;
+        --marquee-duration: 28s;
     }
     
     .sample-image img {
@@ -1283,9 +1331,10 @@ main {
 }
 
 @media (max-width: 480px) {
-    .sample-images-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+    .sample-images-section {
+        --sample-w: 132px;
+        --sample-gap: 10px;
+        --marquee-duration: 24s;
     }
     
     .sample-image img {
@@ -1295,6 +1344,19 @@ main {
     .sample-images-text {
         font-size: 0.9rem;
     }
+}
+
+/* The site owner explicitly wants the row to always auto-scroll. For users
+   who enabled "Reduce motion" we slow it to 1/3 speed and drop the hover
+   transforms instead of freezing it — a much weaker animation, but still a
+   loop. To follow WCAG strictly, change the first declaration to
+   `animation: none;` and add `overflow-x: auto` to .sample-images-viewport. */
+@media (prefers-reduced-motion: reduce) {
+    .sample-images-track {
+        animation-duration: calc(var(--marquee-duration) * 3);
+    }
+    .sample-image { transition: none; }
+    .sample-image:hover { transform: none; }
 }
 
 /* Transformations Section */

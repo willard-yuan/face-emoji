@@ -82,6 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
     loadModels().finally(updateModelReadiness);
 });
 
+// 示例图的循环滚动完全由 CSS 驱动（两组镜像 + translateX(-50%)），
+// 不在这里做任何 DOM 操作，避免外部脚本缓存/加载时序导致动画不启动。
+
 // 独立挂载移动菜单的交互增强：
 // 1) 点击外部区域自动关闭
 // 2) 按下 Escape 键关闭

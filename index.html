@@ -431,21 +431,58 @@
                     <input type="file" id="fileInput" accept="image/*" aria-label="Select photo file to upload">
                     
                     
-                    <!-- Sample Images Section -->
+                    <!-- Sample Images Section — right-to-left infinite marquee.
+                         Two identical groups make the -50% translate seamless. The CSS
+                         animation runs directly on the track (no JS gate), so it keeps
+                         scrolling even if app.js is cached, slow or fails to load.
+                         IMPORTANT: the second group is a visual mirror — when adding
+                         or removing a sample photo, update BOTH groups identically. -->
                     <div class="sample-images-section">
                         <p class="sample-images-text">No image? Try one of these</p>
-                        <div class="sample-images-grid">
-                            <div class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_1.webp')">
-                                <img src="/public/images/emojiface_add_emoji_on_face_demo_1.webp" alt="Sample image 1 - person with emoji face" loading="lazy">
-                            </div>
-                            <div class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_2.webp')">
-                                <img src="/public/images/emojiface_add_emoji_on_face_demo_2.webp" alt="Sample image 2 - person with emoji face" loading="lazy">
-                            </div>
-                            <div class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_3.webp')">
-                                <img src="/public/images/emojiface_add_emoji_on_face_demo_3.webp" alt="Sample image 3 - person with emoji face" loading="lazy">
-                            </div>
-                            <div class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_4.webp')">
-                                <img src="/public/images/emojiface_add_emoji_on_face_demo_4.webp" alt="Sample image 4 - person with emoji face" loading="lazy">
+                        <div class="sample-images-viewport" role="group" aria-label="Sample photos you can try">
+                            <div class="sample-images-track" id="sampleImagesTrack">
+                                <div class="sample-images-group">
+                                    <button type="button" class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_1.webp')">
+                                        <img src="/public/images/emojiface_add_emoji_on_face_demo_1.webp" alt="Sample photo 1: three friends outdoors" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_2.webp')">
+                                        <img src="/public/images/emojiface_add_emoji_on_face_demo_2.webp" alt="Sample photo 2: group of four friends" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_3.webp')">
+                                        <img src="/public/images/emojiface_add_emoji_on_face_demo_3.webp" alt="Sample photo 3: two friends portrait" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_4.webp')">
+                                        <img src="/public/images/emojiface_add_emoji_on_face_demo_4.webp" alt="Sample photo 4: two friends portrait" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" onclick="loadSampleImage('/public/images/demo2.webp')">
+                                        <img src="/public/images/demo2.webp" alt="Sample photo 5: couple at an event" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" onclick="loadSampleImage('/public/images/demo1.webp')">
+                                        <img src="/public/images/demo1.webp" alt="Sample photo 6: man with a glass" loading="eager" decoding="async">
+                                    </button>
+                                </div>
+                                <!-- Mirror group: purely visual, hidden from screen readers
+                                     and from the Tab order, but still clickable. -->
+                                <div class="sample-images-group" data-sample-mirror aria-hidden="true">
+                                    <button type="button" class="sample-image" tabindex="-1" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_1.webp')">
+                                        <img src="/public/images/emojiface_add_emoji_on_face_demo_1.webp" alt="" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" tabindex="-1" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_2.webp')">
+                                        <img src="/public/images/emojiface_add_emoji_on_face_demo_2.webp" alt="" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" tabindex="-1" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_3.webp')">
+                                        <img src="/public/images/emojiface_add_emoji_on_face_demo_3.webp" alt="" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" tabindex="-1" onclick="loadSampleImage('/public/images/emojiface_add_emoji_on_face_demo_4.webp')">
+                                        <img src="/public/images/emojiface_add_emoji_on_face_demo_4.webp" alt="" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" tabindex="-1" onclick="loadSampleImage('/public/images/demo2.webp')">
+                                        <img src="/public/images/demo2.webp" alt="" loading="eager" decoding="async">
+                                    </button>
+                                    <button type="button" class="sample-image" tabindex="-1" onclick="loadSampleImage('/public/images/demo1.webp')">
+                                        <img src="/public/images/demo1.webp" alt="" loading="eager" decoding="async">
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
