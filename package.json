@@ -7,7 +7,8 @@
     "start": "python3 -m http.server 8080",
     "dev": "python3 -m http.server 8080",
     "build": "echo 'Static site ready for deployment'",
-    "vercel-build": "echo 'Vercel build completed'"
+    "vercel-build": "echo 'Vercel build completed'",
+    "indexnow": "node indexnow.mjs"
   },
   "keywords": [
     "emoji",
