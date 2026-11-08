@@ -4067,3 +4067,98 @@ body {
     .article-page .article-intro { font-size: 17px; padding: 0; }
     .article-page .highlight-box { padding: 20px; }
 }
+
+/* ==================================================================
+   Compact content layout (Plan A)
+   ------------------------------------------------------------------
+   Shrink the shared content column from 1200px to 960px (= 80%) so
+   AdSense Auto Ads has ~240px of clear side-rail space on a 1440px
+   viewport, while leaving the CSS viewport itself at 100%.
+
+   Deliberately NOT using zoom / transform: scale(): both would keep
+   the CSS viewport unchanged (so no extra side-rail space), and would
+   also break sticky/fixed ad positioning, visibility measurement and
+   the canvas hit-testing in app.js (getBoundingClientRect based).
+
+   All section-level widths collapse into one shared variable set.
+   Rollback: add class="layout-legacy" to <html>, or delete this block.
+   ================================================================== */
+:root {
+    --content-max: 960px;
+    --side-gutter: 32px;
+    /* Viewport-based (not parent-based) so footer containers, whose
+       parent already carries 24px padding, stay on the same baseline. */
+    --content-width: min(var(--content-max), calc(100vw - var(--side-gutter)));
+    --page-pad: 20px;
+    --hero-h1: 2.75rem;
+    --section-h2: 2.1rem;
+    --section-h2-sm: 1.9rem;
+}
+
+html.layout-legacy {
+    --content-max: 1200px;
+    --content-width: 1200px;
+    --hero-h1: 3.3rem;
+    --section-h2: 2.5rem;
+    --section-h2-sm: 2.2rem;
+}
+
+/* One shared column: header, hero, every section, article pages, footer.
+   min() tapers the column smoothly from 1200px down to 769px instead
+   of jumping at a single hard breakpoint. */
+html:not(.layout-legacy) .container,
+html:not(.layout-legacy) .footer-container,
+html:not(.layout-legacy) .transformations .container,
+html:not(.layout-legacy) .why-choose .container,
+html:not(.layout-legacy) .popular-uses .container,
+html:not(.layout-legacy) .perfect-emoji .container,
+html:not(.layout-legacy) .faq .container,
+html:not(.layout-legacy) .article-page .article-header > .container,
+html:not(.layout-legacy) .article-page .article-content > .container {
+    max-width: var(--content-width);
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--page-pad);
+    padding-right: var(--page-pad);
+}
+
+/* Desktop-only, light typographic tightening. Text is NOT scaled to 80%:
+   that would hurt readability and AdSense viewability / Active View. */
+@media (min-width: 1025px) {
+    html:not(.layout-legacy) .hero h1 {
+        font-size: var(--hero-h1);
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
+    html:not(.layout-legacy) .hero p { max-width: 640px; }
+    html:not(.layout-legacy) .upload-container { padding: 32px; }
+
+    html:not(.layout-legacy) .transformations h2,
+    html:not(.layout-legacy) .why-choose h2,
+    html:not(.layout-legacy) .how-it-works h2 { font-size: var(--section-h2); }
+
+    html:not(.layout-legacy) .popular-uses h2,
+    html:not(.layout-legacy) .perfect-emoji h2,
+    html:not(.layout-legacy) .faq h2 { font-size: var(--section-h2-sm); }
+
+    html:not(.layout-legacy) .transformations,
+    html:not(.layout-legacy) .why-choose,
+    html:not(.layout-legacy) .how-it-works,
+    html:not(.layout-legacy) .perfect-emoji,
+    html:not(.layout-legacy) .faq {
+        padding-top: 64px;
+        padding-bottom: 64px;
+    }
+}
+
+/* Small screens: no artificial side gutters, reuse the existing
+   15 / 12 / 10px page paddings so mobile layout is unchanged. */
+@media (max-width: 768px) {
+    :root { --content-width: 100%; --page-pad: 15px; }
+}
+@media (max-width: 480px) {
+    :root { --page-pad: 12px; }
+}
+@media (max-width: 360px) {
+    :root { --page-pad: 10px; }
+}
