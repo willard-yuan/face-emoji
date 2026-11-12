@@ -551,9 +551,9 @@
                     <div class="emoji-selection" role="region" aria-labelledby="emoji-selection-header">
                         <div class="emoji-selection-header" id="emoji-selection-header">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-smile" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" x2="9.01" y1="9" y2="9"></line><line x1="15" x2="15.01" y1="9" y2="9"></line></svg>
-                            <span>Choose Emoji Style</span>
+                            <span id="emojiSelectionTitle">Choose Emoji Style</span>
                         </div>
-                        <p class="emoji-selection-sub">Pick a smart mode, or choose an exact emoji to cover every detected face. Your photo stays on this device.</p>
+                        <p class="emoji-selection-sub" id="emojiSelectionSub">Pick a smart mode, or choose an exact emoji to cover every detected face. Your photo stays on this device.</p>
 
                         <div class="emoji-chooser" id="emojiChooser" role="radiogroup" aria-labelledby="emoji-selection-header">
 
@@ -561,6 +561,18 @@
                                 <button type="button" class="emoji-mode active" data-style="random_labubu" role="radio" aria-checked="true" tabindex="0" aria-label="Auto Labubu — auto select from the Labubu collection" title="Auto select from the Labubu collection"><img src="./public/emojis/labubu_emoji4.png" alt="" width="20" height="20">Auto Labubu</button>
                                 <button type="button" class="emoji-mode" data-style="auto" role="radio" aria-checked="false" tabindex="-1" aria-label="Auto Emoji — let AI choose the best emoji" title="Let AI choose the best emoji"><span class="emoji-mode-glyph" aria-hidden="true">&#10022;</span>Auto Emoji</button>
                                 <button type="button" class="emoji-mode" data-style="labubu" role="radio" aria-checked="false" tabindex="-1" aria-label="Happy Labubu — use a happy Labubu emoji" title="Use a happy Labubu emoji"><img src="./public/emojis/labubu_emoji2.png" alt="" width="20" height="20">Happy Labubu</button>
+                                <button type="button" class="emoji-mode" data-style="mask_gaussian" role="radio" aria-checked="false" tabindex="-1" aria-label="Blur — Gaussian blur detected faces" title="Gaussian blur detected faces"><span class="emoji-mode-glyph" aria-hidden="true">&#8779;</span>Blur</button>
+                                <button type="button" class="emoji-mode" data-style="mask_mosaic" role="radio" aria-checked="false" tabindex="-1" aria-label="Pixelate — Mosaic faces" title="Mosaic / pixelate detected faces"><span class="emoji-mode-glyph" aria-hidden="true">&#9638;</span>Pixelate</button>
+                                <button type="button" class="emoji-mode" data-style="mask_solid" role="radio" aria-checked="false" tabindex="-1" aria-label="Solid Block — Cover faces completely" title="Cover faces with a solid block"><span class="emoji-mode-glyph" aria-hidden="true">&#9632;</span>Solid Block</button>
+                            </div>
+
+                            <div class="mask-controls" id="maskControls" hidden>
+                                <div class="mask-controls-row">
+                                    <label for="maskStrength">Mask strength</label>
+                                    <input type="range" id="maskStrength" min="1" max="10" step="1" value="6" aria-describedby="maskStrengthHelp">
+                                    <output id="maskStrengthValue" for="maskStrength">6</output>
+                                </div>
+                                <p class="mask-help" id="maskStrengthHelp">Higher means stronger anonymization. Each mask is expanded beyond the detected face so hair, ears and chin stay covered.</p>
                             </div>
 
                             <div class="emoji-group">
@@ -974,9 +986,10 @@
         </footer>
 
     <!-- Critical scripts loaded first -->
-    <script src="result-store.js?v=20261108c"></script>
+    <script src="result-store.js?v=20261112b"></script>
+    <script src="mask-engine.js?v=20261112b"></script>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script src="app.js?v=20261108c"></script>
+    <script src="app.js?v=20261112b"></script>
     
     <!-- Non-critical scripts loaded after page load -->
     <script>

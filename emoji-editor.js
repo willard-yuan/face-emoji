@@ -55,9 +55,16 @@
         function metrics() { return getHandleMetrics(); }
 
         function paintEmoji(target, e) {
+            // Mask layers store params, not pixels: rebuild the patch from the
+            // original photo when geometry or strength changed. The quantised
+            // key in mask-engine.js keeps dragging smooth.
+            if (e.mask && global.MaskEngine) {
+                global.MaskEngine.refreshLayer(e, baseImage, false);
+            }
+            if (!e.img) return;
             target.save();
             target.translate(e.x + e.width / 2, e.y + e.height / 2);
-            target.rotate(e.angle);
+            target.rotate(e.angle || 0);
             target.drawImage(e.img, -e.width / 2, -e.height / 2, e.width, e.height);
             target.restore();
         }
@@ -83,15 +90,18 @@
                 ctx.fillRect(xs[p[0]], ys[p[1]], h, h);
             });
 
-            // Rotate handle (diamond above the top edge).
-            var ry = -e.height / 2 - m.rotateOffset;
-            ctx.beginPath();
-            ctx.moveTo(0, ry - rhalf);
-            ctx.lineTo(rhalf, ry);
-            ctx.lineTo(0, ry + rhalf);
-            ctx.lineTo(-rhalf, ry);
-            ctx.closePath();
-            ctx.fill();
+            // Rotate handle (diamond above the top edge). Mask layers cannot
+            // rotate: a rotated opaque patch would expose uncovered pixels.
+            if (!e.mask) {
+                var ry = -e.height / 2 - m.rotateOffset;
+                ctx.beginPath();
+                ctx.moveTo(0, ry - rhalf);
+                ctx.lineTo(rhalf, ry);
+                ctx.lineTo(0, ry + rhalf);
+                ctx.lineTo(-rhalf, ry);
+                ctx.closePath();
+                ctx.fill();
+            }
 
             // Delete handle (dark square with a white X).
             ctx.fillStyle = '#222';
@@ -126,6 +136,13 @@
             out.height = canvas.height;
             var c = out.getContext('2d');
             c.drawImage(baseImage, 0, 0, out.width, out.height);
+            // Force a final resample so exported patches match the exact
+            // geometry after the user's last drag / resize.
+            if (global.MaskEngine) {
+                emojis.forEach(function (e) {
+                    if (e.mask) global.MaskEngine.refreshLayer(e, baseImage, true);
+                });
+            }
             emojis.forEach(function (e) { paintEmoji(c, e); });
             return out;
         }
@@ -160,7 +177,7 @@
                         l.y >= delY && l.y <= delY + m.handleSize) {
                         return { action: 'delete', emoji: e, index: i, cursor: 'pointer' };
                     }
-                    if (boxHit(l, 0, -e.height / 2 - m.rotateOffset, rhalf, rhalf)) {
+                    if (!e.mask && boxHit(l, 0, -e.height / 2 - m.rotateOffset, rhalf, rhalf)) {
                         return { action: 'rotate', emoji: e, index: i, cursor: 'crosshair' };
                     }
                     var corners = [
@@ -258,7 +275,7 @@
             var dx = p.x - drag.x, dy = p.y - drag.y;
             if (drag.action === 'drag') {
                 e.x += dx; e.y += dy;
-            } else if (drag.action === 'rotate') {
+            } else if (drag.action === 'rotate' && !e.mask) {
                 e.angle = Math.atan2(p.y - (e.y + e.height / 2), p.x - (e.x + e.width / 2)) + Math.PI / 2;
             } else if (drag.action === 'resize') {
                 resize(e, drag.mode, dx, dy);

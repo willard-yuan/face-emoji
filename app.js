@@ -1,3 +1,28 @@
+// 构建标记 + 唯一检测参数。
+// 曾经出现过「打码模式比 emoji 模式多检出一张脸」：实测发现是浏览器缓存了
+// 旧版 app.js（0.2 / 20），0.2556 分的手臂误检框被带进来；当前磁盘代码
+// 本身已是 0.3 / 10。所以这里把参数收敛成唯一常量，并在运行时自曝版本，
+// 以后遇到疑似缓存问题，看 console 或 window.EmojiFaceBuild 就能立刻定性。
+const APP_BUILD = '20261112b';
+const FACE_DETECTION_OPTIONS = Object.freeze({
+    minConfidence: 0.3,
+    maxResults: 10
+});
+
+// 所有遮挡方式（emoji / Blur / Pixelate / Solid Block）共用这一份参数。
+// 禁止再按 activeMaskKind() 分叉阈值：降低全局置信度会引入手臂、衣褶等
+// 低分误检，还会让两种模式的检出数量不一致。漏检应由打码框外扩、
+// 手动补框或用户主动选择的灵敏度开关解决。
+if (typeof window !== 'undefined') {
+    window.EmojiFaceBuild = Object.freeze({
+        build: APP_BUILD,
+        minConfidence: FACE_DETECTION_OPTIONS.minConfidence,
+        maxResults: FACE_DETECTION_OPTIONS.maxResults
+    });
+    console.info('[EmojiFace] build ' + APP_BUILD + ', detection ' +
+        FACE_DETECTION_OPTIONS.minConfidence + '/' + FACE_DETECTION_OPTIONS.maxResults);
+}
+
 // 全局变量
 let isModelsLoaded = false;
 let originalImage = null;
@@ -7,6 +32,8 @@ let selectedEmojiStyle = 'random_labubu';
 let selectedEmojiPreset = '';
 // 人类可读的选中项名称，随结果一起传给 result.html 展示。
 let selectedEmojiLabel = 'Auto Labubu';
+// 打码强度 1–10；仅在 selectedEmojiStyle 为 mask_* 时使用。
+let selectedMaskStrength = 6;
 let detectedFaces = null;
 let drawnEmojis = [];
 let selectedEmoji = null;
@@ -25,6 +52,19 @@ let isResizing = false;
 let isRotating = false;
 let resizeMode = null;
 let dragStartX, dragStartY;
+
+// selectedEmojiStyle 以 mask_ 开头时处于打码模式，返回 gaussian/mosaic/solid。
+function activeMaskKind() {
+    return (typeof selectedEmojiStyle === 'string' && selectedEmojiStyle.indexOf('mask_') === 0)
+        ? selectedEmojiStyle.slice(5)
+        : '';
+}
+
+// 打码图层带 mask 参数；emoji 图层没有，天然向后兼容旧记录。
+function isMaskLayer(layer) {
+    return Boolean(layer && layer.mask && window.MaskEngine &&
+        window.MaskEngine.isMaskKind(layer.mask.kind));
+}
 
 // 控件显示策略配置与状态
 // 配置：是否在首次添加后为所有emoji显示编辑控件
@@ -51,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     setupTabSwitching();
     setupEmojiSelection();
+    setupMaskControls();
     
     // 关闭按钮与应用按钮已在 HTML 上通过 onclick 绑定，此处不再重复挂载
 
@@ -358,14 +399,19 @@ function createImageFromFile(file) {
     });
 }
 
-// 检测人脸和表情
+// 检测人脸和表情。emoji 与所有打码模式走完全相同的调用和参数，
+// 保证检出数量永远一致；每次结果都打到 console 便于实机核对。
 async function detectFacesAndExpressions(img) {
     const detections = await faceapi
         .detectAllFaces(img, new faceapi.SsdMobilenetv1Options({
-            minConfidence: 0.3,  // 提高置信度阈值，减少误检
-            maxResults: 10       // 限制最多返回10个人脸
+            minConfidence: FACE_DETECTION_OPTIONS.minConfidence,
+            maxResults: FACE_DETECTION_OPTIONS.maxResults
         }))
         .withFaceExpressions();
+
+    console.info('[EmojiFace] detected ' + detections.length + ' faces @ ' +
+        FACE_DETECTION_OPTIONS.minConfidence + ' (build ' + APP_BUILD +
+        ', mode ' + (activeMaskKind() || 'emoji') + ')');
 
 
         // .detectAllFaces(img, new faceapi.MtcnnOptions({
@@ -397,18 +443,49 @@ async function drawEmojiOnFaces(img, detections) {
     processedCanvas.width = img.width;
     processedCanvas.height = img.height;
 
-    // 清空之前绘制的emojis
+    // 清空之前绘制的图层
     drawnEmojis = [];
     selectedEmoji = null;
-    
-    // 为每个检测到的人脸绘制表情符号
+
+    // 打码图层与 emoji 图层共用同一套合成/编辑/导出管线：
+    // drawImage 原生接受 canvas，patch 就是一块「贴图」。
+    const maskKind = activeMaskKind();
     for (const detection of detections) {
-        await drawEmojiForDetection(ctx, detection);
+        if (maskKind) {
+            drawMaskForDetection(detection, maskKind);
+            await Promise.resolve(); // 让处理浮层有机会渲染
+        } else {
+            await drawEmojiForDetection(ctx, detection);
+        }
     }
 
     // 首次添加后进入初始展示阶段（根据配置）
     controlsInitialActive = !!showControlsInitially;
     redrawCanvas();
+}
+
+// 为单个人脸生成打码图层。检测框只框五官，外扩后才能真正挡住
+// 额头、下巴、耳朵等可识别轮廓；越界部分由引擎用不透明底色补齐。
+function drawMaskForDetection(detection, kind) {
+    if (!window.MaskEngine || !originalImage) return;
+    const box = detection.detection.box;
+    const width = box.width * 1.22;
+    const height = box.height * 1.28;
+    const x = box.x - (width - box.width) / 2;
+    const y = box.y - (height - box.height) / 2;
+
+    const layer = {
+        kind: kind,
+        img: null,
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+        angle: 0,
+        mask: { kind: kind, strength: selectedMaskStrength, color: '#111111' }
+    };
+    window.MaskEngine.refreshLayer(layer, originalImage, true);
+    drawnEmojis.push(layer);
 }
 
 // 为单个检测结果绘制表情符号
@@ -656,6 +733,73 @@ function getEmojiOptionLabel(option) {
     return label.split('—')[0].trim() || option.getAttribute('data-emoji') || 'Emoji';
 }
 
+// 打码模式复用 chooser 的 radiogroup：新增按钮带 data-style="mask_*"，
+// getEmojiOptions() 会自动把它们纳入互斥与键盘导航。
+function setupMaskControls() {
+    const slider = document.getElementById('maskStrength');
+    if (slider) {
+        slider.value = String(selectedMaskStrength);
+        slider.addEventListener('input', () => {
+            selectedMaskStrength = window.MaskEngine
+                ? window.MaskEngine.clampStrength(slider.value)
+                : Number(slider.value) || 6;
+            const output = document.getElementById('maskStrengthValue');
+            if (output) output.textContent = String(selectedMaskStrength);
+
+            // 已有打码结果时实时重绘，无需重新检测人脸。
+            const masks = drawnEmojis.filter(isMaskLayer);
+            if (masks.length) {
+                masks.forEach(layer => {
+                    layer.mask.strength = selectedMaskStrength;
+                    layer._maskKey = '';
+                });
+                redrawCanvas();
+            }
+        });
+    }
+    syncMaskUI();
+}
+
+function syncMaskUI() {
+    const kind = activeMaskKind();
+    const chooser = document.getElementById('emojiChooser');
+    const panel = document.getElementById('maskControls');
+    const output = document.getElementById('maskStrengthValue');
+    const applyBtn = document.getElementById('emojiApplyBtn');
+    const title = document.getElementById('emojiSelectionTitle');
+    const sub = document.getElementById('emojiSelectionSub');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    const labels = {
+        mask_gaussian: 'Click to blur faces',
+        mask_mosaic: 'Click to pixelate faces',
+        mask_solid: 'Click to cover faces'
+    };
+    const applyLabel = labels[selectedEmojiStyle] || 'Click to add Emoji to Face';
+
+    if (chooser) chooser.classList.toggle('mask-active', Boolean(kind));
+    if (panel) panel.hidden = !kind;
+    if (output) output.textContent = String(selectedMaskStrength);
+    if (applyBtn) {
+        applyBtn.textContent = applyLabel;
+        applyBtn.setAttribute('aria-label',
+            kind ? 'Apply ' + kind + ' face mask to detected faces in the uploaded photo'
+                 : 'Apply selected emoji style to detected faces in the uploaded photo');
+    }
+    if (title) title.textContent = kind ? 'Choose Face Mask' : 'Choose Emoji Style';
+    if (sub) {
+        sub.textContent = kind
+            ? 'Masks are generated from your own photo and stay on this device. Drag or resize a mask to adjust coverage.'
+            : 'Pick a smart mode, or choose an exact emoji to cover every detected face. Your photo stays on this device.';
+    }
+    if (downloadBtn) {
+        downloadBtn.textContent = kind ? 'Download Masked Photo' : 'Download Emoji Photo';
+        downloadBtn.setAttribute('aria-label', kind
+            ? 'Download the photo with face masks applied'
+            : 'Download the photo with emoji faces applied');
+    }
+}
+
 function setupEmojiSelection() {
     const chooser = document.getElementById('emojiChooser');
     if (!chooser) return;
@@ -692,12 +836,15 @@ function selectEmojiOption(selectedOption, allOptions, announce = true) {
     const label = document.getElementById('emojiSelectedLabel');
     if (label) label.textContent = 'Selected: ' + selectedEmojiLabel;
 
+    syncMaskUI();
+
     if (announce && typeof window.va === 'function') {
         window.va('event', {
             name: 'Emoji Style Selected',
             data: {
                 emojiStyle: selectedEmojiStyle,
-                emojiPreset: selectedEmojiPreset
+                emojiPreset: selectedEmojiPreset,
+                maskKind: activeMaskKind()
             }
         });
     }
@@ -731,6 +878,17 @@ function handleEmojiKeyNavigation(e, currentOption, allOptions) {
     }
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) === -1) return;
     e.preventDefault();
+
+    // 打码模式下 emoji 网格被隐藏：方向键只在模式行内左右循环，
+    // 避免焦点跳进不可见元素。
+    if (activeMaskKind() && !currentOption.classList.contains('emoji-tile')) {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+            const row = Array.from(document.querySelectorAll('.emoji-chooser .emoji-mode'));
+            const i = row.indexOf(currentOption);
+            moveEmojiFocus(row[(i + (e.key === 'ArrowRight' ? 1 : -1) + row.length) % row.length], allOptions);
+        }
+        return;
+    }
 
     const modes = Array.from(document.querySelectorAll('.emoji-chooser .emoji-mode'));
     const grids = Array.from(document.querySelectorAll('.emoji-chooser .emoji-grid'));
@@ -814,7 +972,8 @@ async function applyEmojiToFace() {
             name: 'Add Emoji Click',
             data: {
                 emojiStyle: selectedEmojiStyle,
-                emojiPreset: selectedEmojiPreset
+                emojiPreset: selectedEmojiPreset,
+                maskKind: activeMaskKind()
             }
         });
     }
@@ -852,6 +1011,7 @@ async function applyEmojiToFace() {
         }
 
         endProcessing();
+        syncMaskUI();
 
         // 默认把结果放到独立、可索引的 result.html；存储或跳转失败时
         // 自动退回原来的同页结果，保证主流程不中断。
@@ -958,14 +1118,17 @@ function setProcessingStage(stage) {
         segment.classList.toggle('is-done', i < index);
     });
 
+    const stageLabel = (stage === 'draw' && activeMaskKind())
+        ? 'Applying face masks'
+        : (PROCESSING_LABELS[stage] || 'Working');
     const track = document.getElementById('processingTrack');
     if (track) {
         track.setAttribute('aria-valuenow', String(index + 1));
-        track.setAttribute('aria-valuetext', PROCESSING_LABELS[stage] || 'Working');
+        track.setAttribute('aria-valuetext', stageLabel);
     }
 
     const heading = document.getElementById('processingHeading');
-    if (heading) heading.textContent = PROCESSING_LABELS[stage] || 'Working';
+    if (heading) heading.textContent = stageLabel;
     const live = document.getElementById('processingLive');
     if (live) live.textContent = PROCESSING_LABELS[stage] || 'Working';
 }
@@ -1115,6 +1278,10 @@ function buildExportCanvas() {
     exportCanvas.height = processedCanvas.height;
     const exportCtx = exportCanvas.getContext('2d');
     exportCtx.drawImage(originalImage, 0, 0);
+    // 导出前强制重采样，确保 patch 与最终几何/强度完全一致。
+    if (window.MaskEngine) {
+        drawnEmojis.forEach(layer => window.MaskEngine.refreshLayer(layer, originalImage, true));
+    }
     drawnEmojis.forEach(emoji => {
         exportCtx.save();
         exportCtx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
@@ -1143,7 +1310,7 @@ function ensureResultStore() {
     if (window.EmojiResultStore) return Promise.resolve(true);
     return new Promise(resolve => {
         const script = document.createElement('script');
-        script.src = 'result-store.js?v=20261108c';
+        script.src = 'result-store.js?v=20261112b';
         script.onload = () => resolve(Boolean(window.EmojiResultStore));
         script.onerror = () => resolve(false);
         document.head.appendChild(script);
@@ -1194,9 +1361,16 @@ async function openResultPage() {
         }
     } catch (e) { /* optional */ }
 
-    // 把每个 emoji 图层序列化，结果页据此重建可拖拽 / 缩放 / 旋转 / 删除的编辑态。
+    // 把每个图层序列化，结果页据此重建可拖拽 / 缩放 / 删除的编辑态。
+    // emoji 存图片 URL；打码图层只存参数，结果页用原图重新采样。
     const emojis = drawnEmojis.map(emoji => ({
-        src: emoji.img.src,
+        src: (emoji.img && emoji.img.src) ? emoji.img.src : '',
+        kind: isMaskLayer(emoji) ? emoji.mask.kind : 'emoji',
+        mask: isMaskLayer(emoji) ? {
+            kind: emoji.mask.kind,
+            strength: emoji.mask.strength,
+            color: emoji.mask.color || '#111111'
+        } : null,
         x: emoji.x,
         y: emoji.y,
         width: emoji.width,
@@ -1211,6 +1385,9 @@ async function openResultPage() {
             style: selectedEmojiStyle,
             styleLabel: selectedEmojiLabel,
             preset: selectedEmojiPreset,
+            mode: activeMaskKind() ? 'mask' : 'emoji',
+            maskKind: activeMaskKind(),
+            maskStrength: selectedMaskStrength,
             faces: detectedFaces ? detectedFaces.length : 0,
             width: exportCanvas.width,
             height: exportCanvas.height,
@@ -1250,6 +1427,7 @@ function downloadImage() {
             data: { 
                 emojiStyle: selectedEmojiStyle,
                 emojiPreset: selectedEmojiPreset,
+                maskKind: activeMaskKind(),
                 facesDetected: detectedFaces ? detectedFaces.length : 0
             }
         });
@@ -1260,7 +1438,7 @@ function downloadImage() {
 
     // 创建下载链接（基于离屏画布）
     const link = document.createElement('a');
-    link.download = 'emojified-photo.png';
+    link.download = activeMaskKind() ? 'masked-photo.png' : 'emojified-photo.png';
     link.href = exportCanvas.toDataURL('image/png');
     
     // 触发下载
@@ -1324,7 +1502,12 @@ function redrawCanvas() {
     ctx.clearRect(0, 0, processedCanvas.width, processedCanvas.height);
     ctx.drawImage(originalImage, 0, 0);
 
-    // 先绘制所有emoji图片
+    // 打码图层按当前几何/强度重采样（内部有量化缓存，拖动不会每帧重算）。
+    if (window.MaskEngine) {
+        drawnEmojis.forEach(layer => window.MaskEngine.refreshLayer(layer, originalImage, false));
+    }
+
+    // 先绘制所有图层
     drawnEmojis.forEach(emoji => {
         ctx.save();
         ctx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
@@ -1367,8 +1550,8 @@ function redrawCanvas() {
             ctx.fillRect(emoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
             ctx.fillRect(-halfHandleSize, emoji.height / 2 - halfHandleSize, handleSize, handleSize);
 
-            // 旋转手柄（菱形），使用独立尺寸与偏移
-            {
+            // 旋转手柄（菱形）；打码图层禁旋转，避免转出未遮挡的原图区域。
+            if (!isMaskLayer(emoji)) {
                 const ry = -emoji.height / 2 - rotateOffset;
                 ctx.beginPath();
                 ctx.moveTo(0, ry - rotateHalfSize);
@@ -1421,8 +1604,8 @@ function redrawCanvas() {
         ctx.fillRect(-selectedEmoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
         ctx.fillRect(selectedEmoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
         ctx.fillRect(-halfHandleSize, selectedEmoji.height / 2 - halfHandleSize, handleSize, handleSize);
-        // 旋转手柄（菱形），使用独立尺寸与偏移
-        {
+        // 旋转手柄（菱形）；打码图层禁旋转。
+        if (!isMaskLayer(selectedEmoji)) {
             const ry = -selectedEmoji.height / 2 - rotateOffset;
             ctx.beginPath();
             ctx.moveTo(0, ry - rotateHalfSize);
@@ -1570,7 +1753,7 @@ function handleCanvasMouseMove(event) {
         dragStartY = y;
         redrawCanvas();
         return;
-    } else if (isRotating && selectedEmoji) {
+    } else if (isRotating && selectedEmoji && !isMaskLayer(selectedEmoji)) {
         const centerX = selectedEmoji.x + selectedEmoji.width / 2;
         const centerY = selectedEmoji.y + selectedEmoji.height / 2;
         const angle = Math.atan2(y - centerY, x - centerX) + Math.PI / 2;
@@ -1609,8 +1792,8 @@ function handleCanvasMouseMove(event) {
                 break;
             }
 
-            // 旋转手柄（上方正中，使用独立尺寸与偏移）
-            if (lx >= -rotateHalfSize && lx <= rotateHalfSize &&
+            // 旋转手柄（上方正中）；打码图层不提供旋转。
+            if (!isMaskLayer(emoji) && lx >= -rotateHalfSize && lx <= rotateHalfSize &&
                 ly >= (-emoji.height / 2 - rotateOffset - rotateHalfSize) && ly <= (-emoji.height / 2 - rotateOffset + rotateHalfSize)) {
                 cursor = 'crosshair';
                 break;
@@ -1729,8 +1912,8 @@ function handleCanvasMouseDown(event) {
             }
         }
 
-        // 旋转手柄（位于上方正中，使用独立尺寸与偏移）
-        if (lx >= -rotateHalfSize && lx <= rotateHalfSize &&
+        // 旋转手柄（位于上方正中）；打码图层不提供旋转。
+        if (!isMaskLayer(emoji) && lx >= -rotateHalfSize && lx <= rotateHalfSize &&
             ly >= (-emoji.height / 2 - rotateOffset - rotateHalfSize) && ly <= (-emoji.height / 2 - rotateOffset + rotateHalfSize)) {
             selectedEmoji = emoji;
             isRotating = true;

@@ -2661,6 +2661,64 @@ main {
     box-shadow: 0 2px 8px rgba(108, 71, 255, 0.12);
 }
 
+/* Face mask modes reuse the existing pill styles; the emoji grid is hidden
+   while a mask mode is selected so the chooser stays compact. */
+.emoji-chooser.mask-active .emoji-group {
+    display: none;
+}
+
+.mask-controls {
+    padding: 14px 16px;
+    background: #f7f6fc;
+    border: 1px solid #e2e4ed;
+    border-radius: 12px;
+}
+
+.mask-controls[hidden] {
+    display: none;
+}
+
+.mask-controls-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.mask-controls-row label {
+    flex: 0 0 auto;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #4b4757;
+}
+
+.mask-controls-row input[type="range"] {
+    flex: 1 1 auto;
+    min-width: 0;
+    accent-color: #6c47ff;
+    cursor: pointer;
+}
+
+.mask-controls-row output {
+    flex: 0 0 28px;
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: #5a3cd7;
+}
+
+.mask-help {
+    margin: 8px 0 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #8a8599;
+}
+
+@media (max-width: 480px) {
+    .mask-controls-row { flex-wrap: wrap; }
+    .mask-controls-row input[type="range"] { flex-basis: 100%; order: 3; }
+}
+
 .emoji-group-title {
     margin: 0 0 7px;
     font-size: 0.74rem;

@@ -65,6 +65,11 @@
                     // result.html in sync with the new compact emoji picker.
                     styleLabel: data.styleLabel || '',
                     preset: data.preset || '',
+                    // Mask params are metadata only; the patch itself is rebuilt
+                    // from originalBlob by mask-engine.js on the result page.
+                    mode: data.mode || 'emoji',
+                    maskKind: data.maskKind || '',
+                    maskStrength: data.maskStrength || 0,
                     faces: data.faces || 0,
                     width: data.width || 0,
                     height: data.height || 0,

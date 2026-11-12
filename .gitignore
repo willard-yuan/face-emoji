@@ -1,0 +1,6 @@
+# Local agent working notes (contain machine-specific paths; keep out of the repo)
+.workbuddy/
+
+# Local tooling noise
+.DS_Store
+node_modules/

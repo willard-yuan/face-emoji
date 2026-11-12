@@ -43,11 +43,21 @@
         'happy_labubu': 'Happy Labubu',
         'happy_emoji': 'Happy Emoji',
         'funny_emoji': 'Funny Emoji',
-        'cool_emoji': 'Cool Emoji'
+        'cool_emoji': 'Cool Emoji',
+        'mask_gaussian': 'Gaussian blur',
+        'mask_mosaic': 'Pixelation',
+        'mask_solid': 'Solid block'
     };
+
+    function isMaskRecord(r) {
+        return Boolean(r && (r.mode === 'mask' || r.maskKind));
+    }
 
     function styleLabelFor(record) {
         if (record.styleLabel) return record.styleLabel;
+        if (record.mode === 'mask' && record.maskKind) {
+            return STYLE_LABELS['mask_' + record.maskKind] || 'Face mask';
+        }
         if (record.style === 'preset' && record.preset) {
             return String(record.preset)
                 .replace(/_256x256$/, '')
@@ -116,10 +126,17 @@
         if (!window.EmojiEditor || !record.originalBlob || !record.emojis || !record.emojis.length) {
             return false;
         }
+        // Mask layers have no image URL; MaskEngine rebuilds their patch from
+        // the original photo. Only emoji layers need an Image object.
+        var hasMask = record.emojis.some(function (e) { return e.mask; });
+        if (hasMask && !window.MaskEngine) return false;
+
         state.originalUrl = URL.createObjectURL(record.originalBlob);
         var images = await Promise.all(
             [window.EmojiEditor.loadImage(state.originalUrl)].concat(
-                record.emojis.map(function (e) { return window.EmojiEditor.loadImage(e.src); })
+                record.emojis.map(function (e) {
+                    return e.mask ? Promise.resolve(null) : window.EmojiEditor.loadImage(e.src);
+                })
             )
         );
         var baseImage = images[0];
@@ -131,12 +148,14 @@
             onChange: onEditorChange
         });
         editor.setEmojis(record.emojis.map(function (e, i) {
-            return {
+            var layer = {
                 img: images[i + 1],
                 x: e.x, y: e.y,
                 width: e.width, height: e.height,
-                angle: e.angle
+                angle: e.angle || 0
             };
+            if (e.mask) layer.mask = e.mask;
+            return layer;
         }));
         state.editor = editor;
         el('resultImage').hidden = true;
@@ -151,7 +170,9 @@
 
         var img = el('resultImage');
         img.src = state.resultUrl;
-        img.alt = 'Your photo with emoji faces applied';
+        img.alt = isMaskRecord(record)
+            ? 'Your photo with face masks applied'
+            : 'Your photo with emoji faces applied';
         if (record.width) img.width = record.width;
         if (record.height) img.height = record.height;
 
@@ -182,6 +203,7 @@
         track('Result View', {
             emojiStyle: record.style || '',
             emojiPreset: record.preset || '',
+            maskKind: record.maskKind || '',
             facesDetected: record.faces || 0,
             hasBeforeAfter: Boolean(record.originalBlob),
             editable: editable
@@ -205,7 +227,7 @@
             var url = URL.createObjectURL(blob);
             var link = document.createElement('a');
             link.href = url;
-            link.download = 'emojified-photo.png';
+            link.download = isMaskRecord(state.record) ? 'masked-photo.png' : 'emojified-photo.png';
             document.body.appendChild(link);
             link.click();
             link.remove();
@@ -213,6 +235,7 @@
             track('Result Download', {
                 emojiStyle: state.record.style || '',
                 emojiPreset: state.record.preset || '',
+                maskKind: state.record.maskKind || '',
                 facesDetected: state.editor ? state.editor.count : (state.record.faces || 0),
                 edited: Boolean(state.editor) && editTracked
             });
@@ -228,10 +251,11 @@
         try {
             var blob = await currentBlob();
             if (!blob) return;
-            var file = new File([blob], 'emojified-photo.png', { type: 'image/png' });
+            var masked = isMaskRecord(state.record);
+            var file = new File([blob], masked ? 'masked-photo.png' : 'emojified-photo.png', { type: 'image/png' });
             track('Result Share');
             if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                navigator.share({ files: [file], title: 'My emoji face photo' })
+                navigator.share({ files: [file], title: masked ? 'My masked photo' : 'My emoji face photo' })
                     .catch(function () { /* user cancelled */ });
             } else {
                 showHint('Sharing an image is not supported in this browser. Use Download emoji photo instead.');
