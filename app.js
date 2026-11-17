@@ -3,7 +3,7 @@
 // 旧版 app.js（0.2 / 20），0.2556 分的手臂误检框被带进来；当前磁盘代码
 // 本身已是 0.3 / 10。所以这里把参数收敛成唯一常量，并在运行时自曝版本，
 // 以后遇到疑似缓存问题，看 console 或 window.EmojiFaceBuild 就能立刻定性。
-const APP_BUILD = '20261112b';
+const APP_BUILD = '20261117a';
 const FACE_DETECTION_OPTIONS = Object.freeze({
     minConfidence: 0.3,
     maxResults: 10
@@ -64,6 +64,23 @@ function activeMaskKind() {
 function isMaskLayer(layer) {
     return Boolean(layer && layer.mask && window.MaskEngine &&
         window.MaskEngine.isMaskKind(layer.mask.kind));
+}
+
+// A rotated opaque patch leaves the four corners of the original axis-aligned
+// face box uncovered. Lay the same opaque patch down axis-aligned first, then
+// draw the rotated one: the union covers the whole detected face, and both
+// layers use identical mask pixels so there is no visible seam. Angle stays a
+// pure paint transform, so rotating never triggers an expensive resample.
+function paintLayer(ctx, layer) {
+    if (!layer || !layer.img) return;
+    if (layer.mask && Math.abs(layer.angle || 0) > 1e-4) {
+        ctx.drawImage(layer.img, layer.x, layer.y, layer.width, layer.height);
+    }
+    ctx.save();
+    ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
+    ctx.rotate(layer.angle || 0);
+    ctx.drawImage(layer.img, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
+    ctx.restore();
 }
 
 // 控件显示策略配置与状态
@@ -1282,13 +1299,7 @@ function buildExportCanvas() {
     if (window.MaskEngine) {
         drawnEmojis.forEach(layer => window.MaskEngine.refreshLayer(layer, originalImage, true));
     }
-    drawnEmojis.forEach(emoji => {
-        exportCtx.save();
-        exportCtx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
-        exportCtx.rotate(emoji.angle);
-        exportCtx.drawImage(emoji.img, -emoji.width / 2, -emoji.height / 2, emoji.width, emoji.height);
-        exportCtx.restore();
-    });
+    drawnEmojis.forEach(layer => paintLayer(exportCtx, layer));
     return exportCanvas;
 }
 
@@ -1310,7 +1321,7 @@ function ensureResultStore() {
     if (window.EmojiResultStore) return Promise.resolve(true);
     return new Promise(resolve => {
         const script = document.createElement('script');
-        script.src = 'result-store.js?v=20261112b';
+        script.src = 'result-store.js?v=20261117a';
         script.onload = () => resolve(Boolean(window.EmojiResultStore));
         script.onerror = () => resolve(false);
         document.head.appendChild(script);
@@ -1508,13 +1519,7 @@ function redrawCanvas() {
     }
 
     // 先绘制所有图层
-    drawnEmojis.forEach(emoji => {
-        ctx.save();
-        ctx.translate(emoji.x + emoji.width / 2, emoji.y + emoji.height / 2);
-        ctx.rotate(emoji.angle);
-        ctx.drawImage(emoji.img, -emoji.width / 2, -emoji.height / 2, emoji.width, emoji.height);
-        ctx.restore();
-    });
+    drawnEmojis.forEach(layer => paintLayer(ctx, layer));
 
     // 控件绘制
     const { handleSize, deleteOffset, rotateHandleSize, rotateOffset } = getHandleMetrics();
@@ -1550,17 +1555,15 @@ function redrawCanvas() {
             ctx.fillRect(emoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
             ctx.fillRect(-halfHandleSize, emoji.height / 2 - halfHandleSize, handleSize, handleSize);
 
-            // 旋转手柄（菱形）；打码图层禁旋转，避免转出未遮挡的原图区域。
-            if (!isMaskLayer(emoji)) {
-                const ry = -emoji.height / 2 - rotateOffset;
-                ctx.beginPath();
-                ctx.moveTo(0, ry - rotateHalfSize);
-                ctx.lineTo(rotateHalfSize, ry);
-                ctx.lineTo(0, ry + rotateHalfSize);
-                ctx.lineTo(-rotateHalfSize, ry);
-                ctx.closePath();
-                ctx.fill();
-            }
+            // 旋转手柄（菱形）
+            const ry = -emoji.height / 2 - rotateOffset;
+            ctx.beginPath();
+            ctx.moveTo(0, ry - rotateHalfSize);
+            ctx.lineTo(rotateHalfSize, ry);
+            ctx.lineTo(0, ry + rotateHalfSize);
+            ctx.lineTo(-rotateHalfSize, ry);
+            ctx.closePath();
+            ctx.fill();
 
             // 删除手柄（右上外侧，深色方块+白色X图标）
             const delX = emoji.width / 2 + deleteOffset - halfHandleSize;
@@ -1604,17 +1607,15 @@ function redrawCanvas() {
         ctx.fillRect(-selectedEmoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
         ctx.fillRect(selectedEmoji.width / 2 - halfHandleSize, -halfHandleSize, handleSize, handleSize);
         ctx.fillRect(-halfHandleSize, selectedEmoji.height / 2 - halfHandleSize, handleSize, handleSize);
-        // 旋转手柄（菱形）；打码图层禁旋转。
-        if (!isMaskLayer(selectedEmoji)) {
-            const ry = -selectedEmoji.height / 2 - rotateOffset;
-            ctx.beginPath();
-            ctx.moveTo(0, ry - rotateHalfSize);
-            ctx.lineTo(rotateHalfSize, ry);
-            ctx.lineTo(0, ry + rotateHalfSize);
-            ctx.lineTo(-rotateHalfSize, ry);
-            ctx.closePath();
-            ctx.fill();
-        }
+        // 旋转手柄（菱形）
+        const ry = -selectedEmoji.height / 2 - rotateOffset;
+        ctx.beginPath();
+        ctx.moveTo(0, ry - rotateHalfSize);
+        ctx.lineTo(rotateHalfSize, ry);
+        ctx.lineTo(0, ry + rotateHalfSize);
+        ctx.lineTo(-rotateHalfSize, ry);
+        ctx.closePath();
+        ctx.fill();
 
         // 删除手柄（右上外侧，深色方块+白色X图标）
         const delX = selectedEmoji.width / 2 + deleteOffset - halfHandleSize;
@@ -1753,7 +1754,7 @@ function handleCanvasMouseMove(event) {
         dragStartY = y;
         redrawCanvas();
         return;
-    } else if (isRotating && selectedEmoji && !isMaskLayer(selectedEmoji)) {
+    } else if (isRotating && selectedEmoji) {
         const centerX = selectedEmoji.x + selectedEmoji.width / 2;
         const centerY = selectedEmoji.y + selectedEmoji.height / 2;
         const angle = Math.atan2(y - centerY, x - centerX) + Math.PI / 2;
@@ -1792,8 +1793,8 @@ function handleCanvasMouseMove(event) {
                 break;
             }
 
-            // 旋转手柄（上方正中）；打码图层不提供旋转。
-            if (!isMaskLayer(emoji) && lx >= -rotateHalfSize && lx <= rotateHalfSize &&
+            // 旋转手柄（上方正中）
+            if (lx >= -rotateHalfSize && lx <= rotateHalfSize &&
                 ly >= (-emoji.height / 2 - rotateOffset - rotateHalfSize) && ly <= (-emoji.height / 2 - rotateOffset + rotateHalfSize)) {
                 cursor = 'crosshair';
                 break;
@@ -1912,8 +1913,8 @@ function handleCanvasMouseDown(event) {
             }
         }
 
-        // 旋转手柄（位于上方正中）；打码图层不提供旋转。
-        if (!isMaskLayer(emoji) && lx >= -rotateHalfSize && lx <= rotateHalfSize &&
+        // 旋转手柄（位于上方正中）
+        if (lx >= -rotateHalfSize && lx <= rotateHalfSize &&
             ly >= (-emoji.height / 2 - rotateOffset - rotateHalfSize) && ly <= (-emoji.height / 2 - rotateOffset + rotateHalfSize)) {
             selectedEmoji = emoji;
             isRotating = true;

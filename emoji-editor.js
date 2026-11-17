@@ -62,6 +62,15 @@
                 global.MaskEngine.refreshLayer(e, baseImage, false);
             }
             if (!e.img) return;
+            // A rotated opaque patch leaves the four corners of the original
+            // axis-aligned face box uncovered. Lay the same opaque patch down
+            // axis-aligned first, then draw the rotated one: the union covers
+            // the whole detected face, and both layers use identical mask
+            // pixels so there is no visible seam. Angle stays a pure paint
+            // transform, so rotating never triggers an expensive resample.
+            if (e.mask && Math.abs(e.angle || 0) > 1e-4) {
+                target.drawImage(e.img, e.x, e.y, e.width, e.height);
+            }
             target.save();
             target.translate(e.x + e.width / 2, e.y + e.height / 2);
             target.rotate(e.angle || 0);
@@ -90,18 +99,15 @@
                 ctx.fillRect(xs[p[0]], ys[p[1]], h, h);
             });
 
-            // Rotate handle (diamond above the top edge). Mask layers cannot
-            // rotate: a rotated opaque patch would expose uncovered pixels.
-            if (!e.mask) {
-                var ry = -e.height / 2 - m.rotateOffset;
-                ctx.beginPath();
-                ctx.moveTo(0, ry - rhalf);
-                ctx.lineTo(rhalf, ry);
-                ctx.lineTo(0, ry + rhalf);
-                ctx.lineTo(-rhalf, ry);
-                ctx.closePath();
-                ctx.fill();
-            }
+            // Rotate handle (diamond above the top edge).
+            var ry = -e.height / 2 - m.rotateOffset;
+            ctx.beginPath();
+            ctx.moveTo(0, ry - rhalf);
+            ctx.lineTo(rhalf, ry);
+            ctx.lineTo(0, ry + rhalf);
+            ctx.lineTo(-rhalf, ry);
+            ctx.closePath();
+            ctx.fill();
 
             // Delete handle (dark square with a white X).
             ctx.fillStyle = '#222';
@@ -177,7 +183,7 @@
                         l.y >= delY && l.y <= delY + m.handleSize) {
                         return { action: 'delete', emoji: e, index: i, cursor: 'pointer' };
                     }
-                    if (!e.mask && boxHit(l, 0, -e.height / 2 - m.rotateOffset, rhalf, rhalf)) {
+                    if (boxHit(l, 0, -e.height / 2 - m.rotateOffset, rhalf, rhalf)) {
                         return { action: 'rotate', emoji: e, index: i, cursor: 'crosshair' };
                     }
                     var corners = [
@@ -275,7 +281,7 @@
             var dx = p.x - drag.x, dy = p.y - drag.y;
             if (drag.action === 'drag') {
                 e.x += dx; e.y += dy;
-            } else if (drag.action === 'rotate' && !e.mask) {
+            } else if (drag.action === 'rotate') {
                 e.angle = Math.atan2(p.y - (e.y + e.height / 2), p.x - (e.x + e.width / 2)) + Math.PI / 2;
             } else if (drag.action === 'resize') {
                 resize(e, drag.mode, dx, dy);

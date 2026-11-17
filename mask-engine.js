@@ -13,6 +13,11 @@
  *    image is never scanned, so 4000x3000 photos stay fast.
  *  - Edge pixels are clamped (not wrapped) and alpha is forced to 255, so a
  *    mask can never become translucent and leak the face underneath.
+ *  - A patch is sampled axis-aligned and angle is a pure paint transform:
+ *    rotating never resamples the patch (no per-frame box blur). Callers draw
+ *    the same opaque patch once axis-aligned before drawing it rotated, so the
+ *    union still covers the original face box corners. See paintLayer() in
+ *    app.js and paintEmoji() in emoji-editor.js.
  */
 (function (global) {
     'use strict';
