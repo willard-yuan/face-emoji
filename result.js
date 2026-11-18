@@ -27,7 +27,9 @@
     function track(name, data) {
         var payload = data || {};
         try {
-            if (typeof window.va === 'function') window.va('event', { name: name, data: payload });
+            if (window.umami && typeof window.umami.track === 'function') {
+                window.umami.track(name, payload);
+            }
             if (typeof window.gtag === 'function') window.gtag('event', name, payload);
         } catch (e) { /* analytics must never break the page */ }
     }
@@ -87,12 +89,46 @@
         return bits.join('  ·  ');
     }
 
-    function exampleState() {
-        // Nothing to change in the DOM: the static example, guide and FAQ are
-        // already in the HTML and visible to crawlers with JS disabled.
+    function isPendingHandoff() {
+        return document.documentElement.classList.contains('result-pending');
+    }
+
+    function expiredState() {
+        // 有 handoff 标记却没有可用记录：结果过期、换了标签或 IndexedDB 不可用。
+        // 不能再把静态示例图当作「已完成的结果」展示给用户。
+        document.documentElement.classList.remove('result-pending');
+        try { sessionStorage.removeItem('emojifaceHasResult'); } catch (e) { /* best effort */ }
+        var heading = document.querySelector('.result-hero > .container > h1');
+        if (heading) heading.textContent = 'Your result is no longer available';
+        var lead = document.querySelector('.result-hero > .container > .result-lead');
+        if (lead) lead.textContent = 'For privacy, results stay on this device for only ten minutes. Run the tool again to make a new emoji face photo.';
+        var img = el('resultImage');
+        if (img) img.hidden = true;
+        var note = el('exampleNote');
+        if (note) {
+            note.textContent = 'The local copy has expired. Nothing was uploaded or saved on a server.';
+            note.hidden = false;
+        }
         var cta = el('primaryCta');
-        cta.textContent = 'Try the emoji face tool';
-        cta.href = 'index.html';
+        if (cta) {
+            cta.textContent = 'Make another emoji photo';
+            cta.href = 'index.html';
+            cta.hidden = false;
+        }
+        track('Result Expired');
+    }
+
+    function exampleState() {
+        if (isPendingHandoff()) {
+            expiredState();
+            return;
+        }
+        // 直接访问 / 爬虫 / 无 JS：静态示例、指南与 FAQ 原样可见
+        var cta = el('primaryCta');
+        if (cta) {
+            cta.textContent = 'Try the emoji face tool';
+            cta.href = 'index.html';
+        }
         track('Result Empty State');
     }
 
@@ -165,49 +201,57 @@
     }
 
     async function renderResult(record) {
-        state.record = record;
-        state.resultUrl = URL.createObjectURL(record.resultBlob);
-
-        var img = el('resultImage');
-        img.src = state.resultUrl;
-        img.alt = isMaskRecord(record)
-            ? 'Your photo with face masks applied'
-            : 'Your photo with emoji faces applied';
-        if (record.width) img.width = record.width;
-        if (record.height) img.height = record.height;
-
-        el('exampleNote').hidden = true;
-
-        var meta = el('resultMeta');
-        meta.textContent = buildMeta();
-        meta.hidden = !meta.textContent;
-
-        el('primaryCta').hidden = true;
-        el('downloadBtn').hidden = false;
-        el('shareBtn').hidden = false;
-
-        if (record.originalBlob) {
-            state.beforeUrl = URL.createObjectURL(record.originalBlob);
-            el('beforeImage').src = state.beforeUrl;
-            el('afterImage').src = state.resultUrl;
-            el('compareSection').hidden = false;
-        }
-
-        var editable = false;
         try {
-            editable = await initEditor(record);
-        } catch (error) {
-            console.warn('Could not restore the editable result, showing the flattened image.', error);
-        }
+            state.record = record;
+            state.resultUrl = URL.createObjectURL(record.resultBlob);
 
-        track('Result View', {
-            emojiStyle: record.style || '',
-            emojiPreset: record.preset || '',
-            maskKind: record.maskKind || '',
-            facesDetected: record.faces || 0,
-            hasBeforeAfter: Boolean(record.originalBlob),
-            editable: editable
-        });
+            var img = el('resultImage');
+            img.src = state.resultUrl;
+            img.alt = isMaskRecord(record)
+                ? 'Your photo with face masks applied'
+                : 'Your photo with emoji faces applied';
+            if (record.width) img.width = record.width;
+            if (record.height) img.height = record.height;
+
+            // 等 blob 图片真正解码完成再揭开骨架，避免示例图或空白闪现。
+            try { await img.decode(); } catch (e) { /* 不支持 decode 时直接揭开 */ }
+
+            el('exampleNote').hidden = true;
+
+            var meta = el('resultMeta');
+            meta.textContent = buildMeta();
+            meta.hidden = !meta.textContent;
+
+            el('primaryCta').hidden = true;
+            el('downloadBtn').hidden = false;
+            el('shareBtn').hidden = false;
+
+            if (record.originalBlob) {
+                state.beforeUrl = URL.createObjectURL(record.originalBlob);
+                el('beforeImage').src = state.beforeUrl;
+                el('afterImage').src = state.resultUrl;
+                el('compareSection').hidden = false;
+            }
+
+            var editable = false;
+            try {
+                editable = await initEditor(record);
+            } catch (error) {
+                console.warn('Could not restore the editable result, showing the flattened image.', error);
+            }
+
+            track('Result View', {
+                emojiStyle: record.style || '',
+                emojiPreset: record.preset || '',
+                maskKind: record.maskKind || '',
+                facesDetected: record.faces || 0,
+                hasBeforeAfter: Boolean(record.originalBlob),
+                editable: editable
+            });
+        } finally {
+            // 无论成功或异常都必须揭开，否则用户会永远停在骨架屏。
+            document.documentElement.classList.remove('result-pending');
+        }
     }
 
     // Always export the CURRENT canvas, not the flattened PNG from the tool.
@@ -302,7 +346,7 @@
             if (record) await renderResult(record);
             else exampleState();
         } catch (error) {
-            console.warn('Could not read the local result, showing the example page.', error);
+            console.warn('Could not read the local result, showing the fallback state.', error);
             exampleState();
         }
     });

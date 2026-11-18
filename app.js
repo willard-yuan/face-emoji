@@ -3,7 +3,7 @@
 // 旧版 app.js（0.2 / 20），0.2556 分的手臂误检框被带进来；当前磁盘代码
 // 本身已是 0.3 / 10。所以这里把参数收敛成唯一常量，并在运行时自曝版本，
 // 以后遇到疑似缓存问题，看 console 或 window.EmojiFaceBuild 就能立刻定性。
-const APP_BUILD = '20261117a';
+const APP_BUILD = '20261118a';
 const FACE_DETECTION_OPTIONS = Object.freeze({
     minConfidence: 0.3,
     maxResults: 10
@@ -21,6 +21,42 @@ if (typeof window !== 'undefined') {
     });
     console.info('[EmojiFace] build ' + APP_BUILD + ', detection ' +
         FACE_DETECTION_OPTIONS.minConfidence + '/' + FACE_DETECTION_OPTIONS.maxResults);
+}
+
+// 统一事件上报：Umami Cloud 是唯一的第三方行为统计。
+// Vercel Insights 已移除，所有历史调用点收敛到这里。
+// tracker 尚未加载时先暂存，下次调用时自动补发，避免早期事件丢失。
+const pendingUmamiEvents = [];
+function flushUmamiEvents() {
+    const umami = window.umami;
+    if (!umami || typeof umami.track !== 'function') return;
+    while (pendingUmamiEvents.length) {
+        const queued = pendingUmamiEvents.shift();
+        try {
+            umami.track(queued.name, queued.data);
+        } catch (e) { /* 单条事件失败不影响后续补发 */ }
+    }
+}
+
+function trackEvent(name, data) {
+    const payload = data || {};
+    try {
+        const umami = window.umami;
+        if (umami && typeof umami.track === 'function') {
+            flushUmamiEvents();
+            umami.track(name, payload);
+        } else if (pendingUmamiEvents.length < 20) {
+            pendingUmamiEvents.push({ name: name, data: payload });
+        }
+    } catch (e) {
+        // 统计脚本异常绝不能影响主流程
+    }
+}
+
+// defer 的 Umami 脚本执行完才会触发 load，届时补发所有暂存事件。
+// 与文件顶部的 window 判断保持一致，避免非浏览器环境直接引用 window。
+if (typeof window !== 'undefined') {
+    window.addEventListener('load', flushUmamiEvents);
 }
 
 // 全局变量
@@ -380,15 +416,10 @@ async function processImage(file) {
     
     try {
         // 追踪用户上传图片事件
-        if (typeof window.va === 'function') {
-            window.va('event', { 
-                name: 'Image Upload',
-                data: { 
-                    fileSize: Math.round(file.size / 1024), // KB
-                    fileType: file.type 
-                }
-            });
-        }
+        trackEvent('Image Upload', {
+            fileSize: Math.round(file.size / 1024), // KB
+            fileType: file.type
+        });
         
         // 创建图片元素
         const img = await createImageFromFile(file);
@@ -706,14 +737,9 @@ function uploadNewImage() {
 async function loadSampleImage(imagePath) {
     try {
         // 追踪用户点击示例图片事件
-        if (typeof window.va === 'function') {
-            window.va('event', { 
-                name: 'Sample Image Selected',
-                data: { 
-                    imagePath: imagePath
-                }
-            });
-        }
+        trackEvent('Sample Image Selected', {
+            imagePath: imagePath
+        });
         
         // 创建图片元素
         const img = new Image();
@@ -855,16 +881,11 @@ function selectEmojiOption(selectedOption, allOptions, announce = true) {
 
     syncMaskUI();
 
-    if (announce && typeof window.va === 'function') {
-        window.va('event', {
-            name: 'Emoji Style Selected',
-            data: {
-                emojiStyle: selectedEmojiStyle,
-                emojiPreset: selectedEmojiPreset,
-                maskKind: activeMaskKind()
-            }
-        });
-    }
+    if (announce) trackEvent('Emoji Style Selected', {
+        emojiStyle: selectedEmojiStyle,
+        emojiPreset: selectedEmojiPreset,
+        maskKind: activeMaskKind()
+    });
 }
 
 function moveEmojiFocus(target, allOptions) {
@@ -984,16 +1005,11 @@ async function applyEmojiToFace() {
     }
 
     // 追踪用户点击添加emoji按钮事件
-    if (typeof window.va === 'function') {
-        window.va('event', {
-            name: 'Add Emoji Click',
-            data: {
-                emojiStyle: selectedEmojiStyle,
-                emojiPreset: selectedEmojiPreset,
-                maskKind: activeMaskKind()
-            }
-        });
-    }
+    trackEvent('Add Emoji Click', {
+        emojiStyle: selectedEmojiStyle,
+        emojiPreset: selectedEmojiPreset,
+        maskKind: activeMaskKind()
+    });
 
     beginProcessing();
 
@@ -1027,18 +1043,26 @@ async function applyEmojiToFace() {
             if (isStaleProcessing()) return;
         }
 
-        endProcessing();
-        syncMaskUI();
-
         // 默认把结果放到独立、可索引的 result.html；存储或跳转失败时
         // 自动退回原来的同页结果，保证主流程不中断。
+        // 导出 / 写 IndexedDB / 导航这段原本没有任何反馈：让处理浮层
+        // 一直覆盖到导航真正发生，避免「浮层消失 → 空白 → 新页面」的二次跳变。
         if (!isClassicResultMode()) {
             try {
-                if (await openResultPage()) return;
+                if (await openResultPage()) {
+                    // location.assign 已发起，浮层随页面卸载；不要调用
+                    // showProcessing(false)，否则会闪回编辑器再跳转。
+                    clearProcessingTimers();
+                    isProcessing = false;
+                    return;
+                }
             } catch (error) {
                 reportHandoffFailure('unexpected-error', error);
             }
         }
+
+        endProcessing();
+        syncMaskUI();
 
         const actionButtons = document.getElementById('actionButtons');
         if (actionButtons) actionButtons.style.display = 'flex';
@@ -1062,7 +1086,7 @@ const PROCESSING_STAGES = ['detect', 'draw', 'done'];
 const PROCESSING_LABELS = {
     detect: 'Finding faces',
     draw: 'Placing emojis',
-    done: 'Almost done'
+    done: 'Preparing your result'
 };
 
 function wait(ms) {
@@ -1309,9 +1333,7 @@ function buildExportCanvas() {
 function reportHandoffFailure(reason, error) {
     console.warn('[EmojiFace] Result page hand-off unavailable: ' + reason + '. Showing the inline result instead.', error || '');
     try {
-        if (typeof window.va === 'function') {
-            window.va('event', { name: 'Result Handoff Failed', data: { reason: reason } });
-        }
+        trackEvent('Result Handoff Failed', { reason: reason });
     } catch (e) { /* analytics must never break the flow */ }
 }
 
@@ -1321,7 +1343,7 @@ function ensureResultStore() {
     if (window.EmojiResultStore) return Promise.resolve(true);
     return new Promise(resolve => {
         const script = document.createElement('script');
-        script.src = 'result-store.js?v=20261117a';
+        script.src = 'result-store.js?v=20261118a';
         script.onload = () => resolve(Boolean(window.EmojiResultStore));
         script.onerror = () => resolve(false);
         document.head.appendChild(script);
@@ -1342,76 +1364,96 @@ function showResultPageFallbackLink() {
 }
 
 async function openResultPage() {
-    const exportCanvas = buildExportCanvas();
-    if (!exportCanvas) {
-        reportHandoffFailure('no-export-canvas');
-        return false;
-    }
-
-    const resultBlob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/png'));
-    if (!resultBlob) {
-        reportHandoffFailure('canvas-toblob-null');
-        return false;
-    }
-    if (!await ensureResultStore()) {
-        reportHandoffFailure('result-store-unavailable');
-        return false;
-    }
-
-    // 原图用作结果页可编辑画布的底图与 before/after 对比。
-    // 用离屏 canvas 重绘而非 fetch(originalImage.src)：blob:/data: URL、
-    // 缓存策略与 CORS 都不会让这一步失败。
-    let originalBlob = null;
+    // 导出 / 写库 / 导航原本是零反馈窗口。浮层若已显示就保持；
+    // 若处理很快、浮层从未出现，则超过 150ms 才补一个，避免快任务闪烁。
+    const handoffTimer = setTimeout(() => {
+        if (isProcessing && !processingCancelled && !processingShownAt) showProcessing(true);
+    }, 150);
     try {
-        if (originalImage) {
-            const originalCanvas = document.createElement('canvas');
-            originalCanvas.width = originalImage.naturalWidth || originalImage.width;
-            originalCanvas.height = originalImage.naturalHeight || originalImage.height;
-            originalCanvas.getContext('2d').drawImage(originalImage, 0, 0);
-            originalBlob = await new Promise(resolve => originalCanvas.toBlob(resolve, 'image/png'));
+        const exportCanvas = buildExportCanvas();
+        if (!exportCanvas) {
+            reportHandoffFailure('no-export-canvas');
+            return false;
         }
-    } catch (e) { /* optional */ }
 
-    // 把每个图层序列化，结果页据此重建可拖拽 / 缩放 / 删除的编辑态。
-    // emoji 存图片 URL；打码图层只存参数，结果页用原图重新采样。
-    const emojis = drawnEmojis.map(emoji => ({
-        src: (emoji.img && emoji.img.src) ? emoji.img.src : '',
-        kind: isMaskLayer(emoji) ? emoji.mask.kind : 'emoji',
-        mask: isMaskLayer(emoji) ? {
-            kind: emoji.mask.kind,
-            strength: emoji.mask.strength,
-            color: emoji.mask.color || '#111111'
-        } : null,
-        x: emoji.x,
-        y: emoji.y,
-        width: emoji.width,
-        height: emoji.height,
-        angle: emoji.angle
-    }));
+        const resultBlob = await new Promise(resolve => exportCanvas.toBlob(resolve, 'image/png'));
+        if (!resultBlob) {
+            reportHandoffFailure('canvas-toblob-null');
+            return false;
+        }
+        if (!await ensureResultStore()) {
+            reportHandoffFailure('result-store-unavailable');
+            return false;
+        }
 
+        // 原图用作结果页可编辑画布的底图与 before/after 对比。
+        // 用离屏 canvas 重绘而非 fetch(originalImage.src)：blob:/data: URL、
+        // 缓存策略与 CORS 都不会让这一步失败。
+        let originalBlob = null;
+        try {
+            if (originalImage) {
+                const originalCanvas = document.createElement('canvas');
+                originalCanvas.width = originalImage.naturalWidth || originalImage.width;
+                originalCanvas.height = originalImage.naturalHeight || originalImage.height;
+                originalCanvas.getContext('2d').drawImage(originalImage, 0, 0);
+                originalBlob = await new Promise(resolve => originalCanvas.toBlob(resolve, 'image/png'));
+            }
+        } catch (e) { /* optional */ }
+
+        // 把每个图层序列化，结果页据此重建可拖拽 / 缩放 / 删除的编辑态。
+        // emoji 存图片 URL；打码图层只存参数，结果页用原图重新采样。
+        const emojis = drawnEmojis.map(emoji => ({
+            src: (emoji.img && emoji.img.src) ? emoji.img.src : '',
+            kind: isMaskLayer(emoji) ? emoji.mask.kind : 'emoji',
+            mask: isMaskLayer(emoji) ? {
+                kind: emoji.mask.kind,
+                strength: emoji.mask.strength,
+                color: emoji.mask.color || '#111111'
+            } : null,
+            x: emoji.x,
+            y: emoji.y,
+            width: emoji.width,
+            height: emoji.height,
+            angle: emoji.angle
+        }));
+
+        try {
+            await window.EmojiResultStore.saveResult({
+                resultBlob: resultBlob,
+                originalBlob: originalBlob,
+                style: selectedEmojiStyle,
+                styleLabel: selectedEmojiLabel,
+                preset: selectedEmojiPreset,
+                mode: activeMaskKind() ? 'mask' : 'emoji',
+                maskKind: activeMaskKind(),
+                maskStrength: selectedMaskStrength,
+                faces: detectedFaces ? detectedFaces.length : 0,
+                width: exportCanvas.width,
+                height: exportCanvas.height,
+                emojis: emojis
+            });
+        } catch (error) {
+            // 隐私模式 / IndexedDB 被禁用 / 存储配额不足：保留同页结果，不打断用户。
+            reportHandoffFailure('indexeddb-write-failed', error);
+            return false;
+        }
+
+        // 用户可能在导出 / 写库期间点了浮层上的 Cancel
+        if (processingCancelled) return false;
+
+    // 会话信号：告诉 result.html 这是一次真实跳转，首屏应先显示加载态。
+    // 直接访问 / 爬虫没有该标记，看到的仍是完整的可索引静态示例页。
+    // hasResult 保留到结果过期，刷新结果页时首屏同样是骨架而非示例图。
     try {
-        await window.EmojiResultStore.saveResult({
-            resultBlob: resultBlob,
-            originalBlob: originalBlob,
-            style: selectedEmojiStyle,
-            styleLabel: selectedEmojiLabel,
-            preset: selectedEmojiPreset,
-            mode: activeMaskKind() ? 'mask' : 'emoji',
-            maskKind: activeMaskKind(),
-            maskStrength: selectedMaskStrength,
-            faces: detectedFaces ? detectedFaces.length : 0,
-            width: exportCanvas.width,
-            height: exportCanvas.height,
-            emojis: emojis
-        });
-    } catch (error) {
-        // 隐私模式 / IndexedDB 被禁用 / 存储配额不足：保留同页结果，不打断用户。
-        reportHandoffFailure('indexeddb-write-failed', error);
-        return false;
-    }
+        sessionStorage.setItem('emojifaceResultPending', '1');
+        sessionStorage.setItem('emojifaceHasResult', '1');
+    } catch (e) { /* 隐私模式下降级为静态示例态，不阻断跳转 */ }
 
-    window.location.assign('result.html');
-    return true;
+        window.location.assign('result.html');
+        return true;
+    } finally {
+        clearTimeout(handoffTimer);
+    }
 }
 
 function isClassicResultMode() {
@@ -1432,17 +1474,12 @@ function downloadImage() {
     }
     
     // 追踪用户点击下载按钮事件
-    if (typeof window.va === 'function') {
-        window.va('event', { 
-            name: 'Download Photo',
-            data: { 
-                emojiStyle: selectedEmojiStyle,
-                emojiPreset: selectedEmojiPreset,
-                maskKind: activeMaskKind(),
-                facesDetected: detectedFaces ? detectedFaces.length : 0
-            }
-        });
-    }
+    trackEvent('Download Photo', {
+        emojiStyle: selectedEmojiStyle,
+        emojiPreset: selectedEmojiPreset,
+        maskKind: activeMaskKind(),
+        facesDetected: detectedFaces ? detectedFaces.length : 0
+    });
     
     // 使用离屏画布导出，避免包含编辑控件
     const exportCanvas = buildExportCanvas();

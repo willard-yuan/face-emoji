@@ -4439,6 +4439,71 @@ html:not(.layout-legacy) .article-page .article-content > .container {
 .result-meta { color: var(--brand); font-weight: 600; }
 .result-hint { font-size: 13px; color: var(--muted); margin: 10px 0 0; }
 
+/* 工具页跳转过来的真实用户：首屏先显示加载态，避免静态示例图抢跑。
+   直接访问与爬虫不带 .result-pending，下面的隐藏规则完全不生效。 */
+.result-loading { display: none; }
+.result-pending .result-loading { display: block; }
+.result-pending .result-hero > .container > h1,
+.result-pending .result-hero > .container > .result-lead,
+.result-pending .result-hero > .container > .result-card { display: none; }
+.result-loading-title {
+    font-size: clamp(2rem, 3.6vw, 2.6rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.028em;
+    color: var(--ink);
+    margin: 0 0 14px;
+}
+.result-loading-lead {
+    max-width: 760px;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #545b6b;
+    margin: 0 0 28px;
+}
+/* 骨架复用 result-card 的内边距与边框，比例与 resultImage 一致，揭开时零 CLS */
+.result-skeleton {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1700 / 1054;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #e9ebf1;
+}
+.result-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    transform: translateX(-100%);
+    animation: result-skeleton-sweep 1.4s ease-in-out infinite;
+}
+@keyframes result-skeleton-sweep {
+    to { transform: translateX(100%); }
+}
+.result-skeleton-meta {
+    width: 45%;
+    height: 13px;
+    border-radius: 6px;
+    background: #e9ebf1;
+    margin: 12px 0 0;
+}
+.result-skeleton-actions { display: flex; gap: 12px; margin-top: 20px; }
+.result-skeleton-actions span {
+    width: 180px;
+    height: 46px;
+    border-radius: 10px;
+    background: #e9ebf1;
+}
+@media (prefers-reduced-motion: reduce) {
+    .result-skeleton::after { animation: none; transform: none; }
+}
+@media (max-width: 768px) {
+    .result-loading-lead { font-size: 15px; }
+    .result-skeleton-actions { flex-direction: column; }
+    .result-skeleton-actions span { width: 100%; }
+}
+
 .result-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
 .result-page .btn {
     display: inline-flex;

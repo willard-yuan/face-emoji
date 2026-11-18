@@ -12,8 +12,6 @@
 
     <!-- Umami Analytics -->
     <script defer src="https://cloud.umami.is/script.js" data-website-id="acbf2cc6-8739-40cb-84fc-5a396588ad5f"></script>
-    <!-- Self-hosted analytics (parallel run during migration) -->
-    <script defer src="https://uv.yongyuan.name/script.js" data-site-id="e7d962fe-b0d1-417b-92d7-6546ed0c3aac"></script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,9 +34,9 @@
 
     <link rel="icon" href="public/favicon.ico">
     <link rel="icon" href="public/favicon.svg" type="image/svg+xml">
-    <link rel="stylesheet" href="styles.css?v=20261108c">
+    <link rel="stylesheet" href="styles.css?v=20261118a">
     <link rel="stylesheet" href="seo-optimization.css">
-    <link rel="preload" href="styles.css?v=20261108c" as="style">
+    <link rel="preload" href="styles.css?v=20261118a" as="style">
     <link rel="preload" href="/public/images/emojified-photo2.webp" as="image">
     <!-- Same logo font as index.html: without this the header falls back to sans-serif -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -47,10 +45,6 @@
 
     <!-- AdSense Auto Ads: side rails get the 240px gutters from the compact layout -->
     <script async defer src="https://pagead.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4184498324686509" crossorigin="anonymous"></script>
-    <script>
-      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
 
     <script type="application/ld+json">
     {
@@ -105,6 +99,22 @@
       ]
     }
     </script>
+    <!-- 真实用户从工具页跳转过来时，首屏先进入「未就绪」态；
+         直接访问与爬虫没有该会话信号，看到的仍是完整的可索引示例页。 -->
+    <script>
+    (function () {
+        try {
+            var pending = sessionStorage.getItem('emojifaceResultPending') === '1';
+            var hasResult = sessionStorage.getItem('emojifaceHasResult') === '1';
+            if (pending || hasResult) {
+                document.documentElement.classList.add('result-pending');
+                // 一次性标记只服务本次跳转；hasResult 保留到结果过期，
+                // 这样刷新结果页时首屏同样是骨架，不会闪回示例图。
+                sessionStorage.removeItem('emojifaceResultPending');
+            }
+        } catch (e) { /* 隐私模式下退回静态示例页 */ }
+    })();
+    </script>
 </head>
 <body class="result-page" itemscope itemtype="https://schema.org/WebPage">
     <a href="#main-content" class="skip-link">Skip to main content</a>
@@ -150,6 +160,16 @@
                         <li><span aria-current="page">Emoji face photo result</span></li>
                     </ol>
                 </nav>
+
+                <div id="resultLoading" class="result-loading" role="status" aria-live="polite">
+                    <h2 class="result-loading-title">Preparing your photo…</h2>
+                    <p class="result-loading-lead">Restoring your emoji face result on this device. Your photo never leaves your browser.</p>
+                    <div class="result-card result-card-skeleton" aria-hidden="true">
+                        <div class="result-skeleton"></div>
+                        <div class="result-skeleton-meta"></div>
+                        <div class="result-skeleton-actions"><span></span><span></span></div>
+                    </div>
+                </div>
 
                 <h1>Your emoji face photo is ready</h1>
                 <p class="result-lead">Save it, change the emoji style, or start another photo. Below you will find how to download, edit and share emoji-masked photos, plus answers to the most common questions about file format, resolution and privacy.</p>
@@ -303,9 +323,9 @@
         </div>
     </footer>
 
-    <script src="result-store.js?v=20261117a"></script>
-    <script src="mask-engine.js?v=20261117a"></script>
-    <script src="emoji-editor.js?v=20261117a"></script>
-    <script src="result.js?v=20261117a"></script>
+    <script defer src="result-store.js?v=20261118a"></script>
+    <script defer src="mask-engine.js?v=20261118a"></script>
+    <script defer src="emoji-editor.js?v=20261118a"></script>
+    <script defer src="result.js?v=20261118a"></script>
 </body>
 </html>

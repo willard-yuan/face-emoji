@@ -13,8 +13,6 @@
     
     <!-- Umami Analytics -->
     <script defer src="https://cloud.umami.is/script.js" data-website-id="acbf2cc6-8739-40cb-84fc-5a396588ad5f"></script>
-    <!-- Self-hosted analytics (parallel run during migration) -->
-    <script defer src="https://uv.yongyuan.name/script.js" data-site-id="e7d962fe-b0d1-417b-92d7-6546ed0c3aac"></script>
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,11 +58,11 @@
         <!-- PWA manifest and Safari pinned tab -->
         <link rel="manifest" href="manifest.webmanifest">
         <link rel="mask-icon" href="public/safari-pinned-tab.svg" color="#6C47FF">
-    <link rel="stylesheet" href="styles.css?v=20261108c">
+    <link rel="stylesheet" href="styles.css?v=20261118a">
     <link rel="stylesheet" href="seo-optimization.css">
     
     <!-- Preload critical resources for better performance -->
-    <link rel="preload" href="styles.css?v=20261108c" as="style">
+    <link rel="preload" href="styles.css?v=20261118a" as="style">
     <link rel="preload" href="seo-optimization.css" as="style">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js" as="script" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -82,11 +80,6 @@
     <script async defer src="https://pagead.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4184498324686509" 
          crossorigin="anonymous"></script>
     
-    <!-- Vercel Analytics - Optimized loading -->
-    <script>
-      window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -353,6 +346,9 @@
       }
     }
     </script>
+    <!-- 结果页与其脚本很快会被用到，提前取回以缩短跳转后的 DOMContentLoaded -->
+    <link rel="prefetch" href="result.html">
+    <link rel="prefetch" href="result.js?v=20261118a" as="script">
 </head>
 <body itemscope itemtype="https://schema.org/WebPage">
     <!-- Skip to main content for accessibility -->
@@ -988,10 +984,10 @@
         </footer>
 
     <!-- Critical scripts loaded first -->
-    <script src="result-store.js?v=20261117a"></script>
-    <script src="mask-engine.js?v=20261117a"></script>
+    <script src="result-store.js?v=20261118a"></script>
+    <script src="mask-engine.js?v=20261118a"></script>
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <script src="app.js?v=20261117a"></script>
+    <script src="app.js?v=20261118a"></script>
     
     <!-- Non-critical scripts loaded after page load -->
     <script>
@@ -1011,10 +1007,6 @@
         });
     </script>
     
-    <!-- <script>
-        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script> -->
     <script>
         function toggleFaq(element) {
             // Toggle active class on the question
