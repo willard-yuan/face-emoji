@@ -62,19 +62,15 @@
                 global.MaskEngine.refreshLayer(e, baseImage, false);
             }
             if (!e.img) return;
-            // A rotated opaque patch leaves the four corners of the original
-            // axis-aligned face box uncovered. Lay the same opaque patch down
-            // axis-aligned first, then draw the rotated one: the union covers
-            // the whole detected face, and both layers use identical mask
-            // pixels so there is no visible seam. Angle stays a pure paint
-            // transform, so rotating never triggers an expensive resample.
-            if (e.mask && Math.abs(e.angle || 0) > 1e-4) {
-                target.drawImage(e.img, e.x, e.y, e.width, e.height);
-            }
+            // Paint the opaque patch exactly once at a constant size that
+            // never depends on angle, so rotating does not scale the blur.
+            var size = (e.mask && global.MaskEngine)
+                ? global.MaskEngine.paintSize(e)
+                : { w: e.width, h: e.height };
             target.save();
             target.translate(e.x + e.width / 2, e.y + e.height / 2);
             target.rotate(e.angle || 0);
-            target.drawImage(e.img, -e.width / 2, -e.height / 2, e.width, e.height);
+            target.drawImage(e.img, -size.w / 2, -size.h / 2, size.w, size.h);
             target.restore();
         }
 

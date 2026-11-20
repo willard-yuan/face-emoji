@@ -14,10 +14,10 @@
  *  - Edge pixels are clamped (not wrapped) and alpha is forced to 255, so a
  *    mask can never become translucent and leak the face underneath.
  *  - A patch is sampled axis-aligned and angle is a pure paint transform:
- *    rotating never resamples the patch (no per-frame box blur). Callers draw
- *    the same opaque patch once axis-aligned before drawing it rotated, so the
- *    union still covers the original face box corners. See paintLayer() in
- *    app.js and paintEmoji() in emoji-editor.js.
+ *    rotating never resamples the patch (no per-frame box blur) and, crucially,
+ *    never changes its size. paintSize() is independent of angle: a rotating
+ *    sticker must not grow, shrink or swap its aspect ratio. Painted exactly
+ *    once. See paintLayer() in app.js and paintEmoji() in emoji-editor.js.
  */
 (function (global) {
     'use strict';
@@ -183,6 +183,25 @@
         return out;
     }
 
+    // Keep the whole detected face box covered at EVERY rotation angle.
+    // This uses a fixed diagonal-sized square patch: larger, but still
+    // constant, so it never scales while the user turns the layer.
+    // Off by default because it noticeably over-covers neighbouring pixels.
+    var COVER_BOX_AT_ANY_ANGLE = false;
+
+    /**
+     * Paint size for a mask patch. Deliberately independent of layer.angle:
+     * an angle-dependent bounding box made the blur grow/shrink (and even swap
+     * width and height) during a rotate drag, which reads as a broken UI.
+     */
+    function paintSize(layer) {
+        if (!COVER_BOX_AT_ANY_ANGLE) {
+            return { w: layer.width, h: layer.height };
+        }
+        var d = Math.sqrt(layer.width * layer.width + layer.height * layer.height);
+        return { w: d, h: d };
+    }
+
     // A layer stores params, not pixels. Rebuild the patch only when geometry
     // or strength changed; positions are quantised to 2px so dragging stays
     // smooth instead of running a box blur on every pointermove frame.
@@ -211,6 +230,7 @@
         clampRect: clampRect,
         createPatch: createPatch,
         refreshLayer: refreshLayer,
+        paintSize: paintSize,
         gaussianRadius: gaussianRadius,
         mosaicBlock: mosaicBlock,
         DEFAULT_STRENGTH: DEFAULT_STRENGTH

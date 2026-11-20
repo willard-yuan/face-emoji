@@ -3,7 +3,7 @@
 // 旧版 app.js（0.2 / 20），0.2556 分的手臂误检框被带进来；当前磁盘代码
 // 本身已是 0.3 / 10。所以这里把参数收敛成唯一常量，并在运行时自曝版本，
 // 以后遇到疑似缓存问题，看 console 或 window.EmojiFaceBuild 就能立刻定性。
-const APP_BUILD = '20261118a';
+const APP_BUILD = '20261120b';
 const FACE_DETECTION_OPTIONS = Object.freeze({
     minConfidence: 0.3,
     maxResults: 10
@@ -102,20 +102,19 @@ function isMaskLayer(layer) {
         window.MaskEngine.isMaskKind(layer.mask.kind));
 }
 
-// A rotated opaque patch leaves the four corners of the original axis-aligned
-// face box uncovered. Lay the same opaque patch down axis-aligned first, then
-// draw the rotated one: the union covers the whole detected face, and both
-// layers use identical mask pixels so there is no visible seam. Angle stays a
-// pure paint transform, so rotating never triggers an expensive resample.
+// 不透明贴图只绘制一次，且尺寸固定、不随角度变化：
+// - 画两份（轴对齐垫底 + 旋转）会出现两个重叠的模糊块；
+// - 按角度算外接框放大，旋转时会明显缩放甚至宽高互换。
+// 现在旋转是纯粹的 transform，模糊块像贴纸一样绕中心转动。
 function paintLayer(ctx, layer) {
     if (!layer || !layer.img) return;
-    if (layer.mask && Math.abs(layer.angle || 0) > 1e-4) {
-        ctx.drawImage(layer.img, layer.x, layer.y, layer.width, layer.height);
-    }
+    var size = (layer.mask && window.MaskEngine)
+        ? window.MaskEngine.paintSize(layer)
+        : { w: layer.width, h: layer.height };
     ctx.save();
     ctx.translate(layer.x + layer.width / 2, layer.y + layer.height / 2);
     ctx.rotate(layer.angle || 0);
-    ctx.drawImage(layer.img, -layer.width / 2, -layer.height / 2, layer.width, layer.height);
+    ctx.drawImage(layer.img, -size.w / 2, -size.h / 2, size.w, size.h);
     ctx.restore();
 }
 
@@ -1343,7 +1342,7 @@ function ensureResultStore() {
     if (window.EmojiResultStore) return Promise.resolve(true);
     return new Promise(resolve => {
         const script = document.createElement('script');
-        script.src = 'result-store.js?v=20261118a';
+        script.src = 'result-store.js?v=20261120b';
         script.onload = () => resolve(Boolean(window.EmojiResultStore));
         script.onerror = () => resolve(false);
         document.head.appendChild(script);
